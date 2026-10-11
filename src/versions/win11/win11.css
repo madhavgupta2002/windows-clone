@@ -1,0 +1,224 @@
+/* Windows 11 — ported from legacy/windows-11.html, scoped under .os-win11. */
+.os-win11 {
+  --ui-font: 14px var(--font);
+  --radius: 4px;
+  --radius-lg: 8px;
+  --power-bg: #0b0b0b;
+}
+.os-win11.theme-light {
+  --acrylic: rgba(243, 243, 243, .85);
+  --flyout: rgba(249, 249, 249, .9);
+  --taskbar: rgba(243, 243, 243, .85);
+  --tb-hover: rgba(255, 255, 255, .62);
+  --mica: #eef1f6;
+  --mica-inactive: #f3f3f3;
+}
+.os-win11.theme-dark {
+  --acrylic: rgba(40, 40, 40, .85);
+  --flyout: rgba(40, 40, 40, .9);
+  --taskbar: rgba(28, 28, 28, .85);
+  --tb-hover: rgba(255, 255, 255, .08);
+  --mica: #1d2330;
+  --mica-inactive: #202020;
+}
+
+/* ---------------------------------------------------------------- window frames (Mica) */
+.os-win11 .mframe { border-radius: 8px; border-color: var(--line); box-shadow: 0 8px 24px rgba(0, 0, 0, .18); background: var(--ui-bg); overflow: visible; }
+.os-win11 .wm-active .mframe, .os-win11 .mframe.active { box-shadow: var(--shadow-window); }
+.os-win11 .mframe.maximized { border-radius: 0; border: 0; box-shadow: none; }
+.os-win11 .mframe-titlebar { height: 40px; background: var(--mica-inactive); border-radius: 8px 8px 0 0; padding-left: 14px; }
+.os-win11 .mframe.active .mframe-titlebar { background: linear-gradient(90deg, color-mix(in srgb, var(--mica) 92%, var(--accent)), var(--mica)); }
+.os-win11.transparency-off .mframe.active .mframe-titlebar { background: var(--mica-inactive); }
+.os-win11 .mframe.maximized .mframe-titlebar { border-radius: 0; }
+.os-win11 .mframe-caption .mframe-btn:last-child { border-top-right-radius: 8px; }
+.os-win11 .mframe.maximized .mframe-caption .mframe-btn:last-child { border-radius: 0; }
+.os-win11 .mframe-body { border-radius: 0 0 8px 8px; }
+.os-win11 .mframe.maximized .mframe-body { border-radius: 0; }
+
+/* snap layouts */
+.os-win11 .snap-flyout {
+  position: absolute; top: calc(100% + 4px); right: -60px; z-index: 50; width: 300px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 12px;
+  background: var(--flyout); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+  border: 1px solid var(--acrylic-edge); border-radius: 8px; box-shadow: var(--shadow-flyout); animation: m-fade .12s;
+}
+.os-win11 .snap-layout { position: relative; height: 52px; }
+.os-win11 .snap-zone {
+  position: absolute; padding: 0; border: 2px solid transparent; background-clip: padding-box;
+  background-color: color-mix(in srgb, var(--ui-fg) 14%, transparent); border-radius: 4px;
+}
+.os-win11 .snap-zone:hover { background-color: var(--accent-ui); }
+
+/* ---------------------------------------------------------------- taskbar */
+.os-win11 .tb11 {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 48px; z-index: 9500;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--taskbar); border-top: 1px solid var(--acrylic-edge); color: var(--ui-fg);
+}
+.os-win11 .tb11-center { display: flex; align-items: center; gap: 4px; height: 100%; }
+.os-win11 .tb11 .m-taskbtn { width: 44px; height: 40px; border-radius: 4px; transition: background .1s; }
+.os-win11 .tb11 .m-taskbtn:hover, .os-win11 .tb11 .m-taskbtn.pressed { background: var(--tb-hover); }
+.os-win11 .tb11 .m-taskbtn:active > * { transform: scale(.88); }
+.os-win11 .tb11 .m-taskbtn > * { transition: transform .1s; }
+.os-win11 .tb11 .m-taskbtn.running::after {
+  content: ""; position: absolute; bottom: 2px; left: 50%; width: 6px; height: 3px; margin-left: -3px;
+  border-radius: 2px; background: var(--muted); transition: width .15s, margin .15s;
+}
+.os-win11 .tb11 .m-taskbtn.running.focused { background: var(--tb-hover); }
+.os-win11 .tb11 .m-taskbtn.running.focused::after { width: 16px; margin-left: -8px; background: var(--accent-ui); }
+.os-win11 .tb11-start .win-logo i { background: linear-gradient(135deg, #5cc6ff, #0a6ed1); border-radius: 1px; }
+.os-win11 .tb11-tray { position: absolute; right: 0; top: 0; bottom: 0; display: flex; align-items: center; gap: 2px; padding-right: 0; }
+.os-win11 .tb11-traybtn {
+  height: 40px; border: 0; background: transparent; border-radius: 4px; padding: 0 8px;
+  display: flex; align-items: center; gap: 8px; color: inherit; position: relative;
+}
+.os-win11 .tb11-traybtn:hover, .os-win11 .tb11-traybtn.pressed { background: var(--tb-hover); }
+.os-win11 .tb11-clock { font-size: 12px; line-height: 16px; text-align: right; }
+.os-win11 .tb11-clock > span:first-child { display: flex; flex-direction: column; align-items: flex-end; }
+.os-win11 .tb11-badge {
+  min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; font-size: 11px; font-weight: 600;
+  display: grid; place-items: center; background: var(--accent-ui); color: var(--accent-fg);
+}
+.os-win11.theme-dark .tb11-badge { color: #000; }
+.os-win11 .tb11 .m-showdesktop { width: 10px; height: 100%; margin-left: 4px; border-left: 1px solid var(--line); }
+.os-win11 .tb11 .m-showdesktop:hover { background: var(--tb-hover); }
+
+/* ---------------------------------------------------------------- flyouts (acrylic) */
+.os-win11 .m-flyout { background: var(--flyout); border-radius: 8px; animation: w11-up .18s cubic-bezier(.1, .9, .2, 1); }
+.os-win11.transparency-off .m-flyout { background: var(--surface); }
+@keyframes w11-up { from { opacity: 0; transform: translateY(24px); } }
+
+/* Start */
+.os-win11 .start11 {
+  bottom: 60px; left: 50%; margin-left: -320px; width: 640px; height: 700px; max-height: calc(100% - 72px);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.os-win11 .start11-main { flex: 1; overflow: auto; padding: 30px 32px 10px; }
+.os-win11 .start11-search {
+  height: 36px; display: flex; align-items: center; gap: 12px; padding: 0 14px; color: var(--muted);
+  background: var(--field-bg); border: 1px solid var(--line); border-bottom: 2px solid var(--accent-ui); border-radius: 18px;
+}
+.os-win11 .start11-search input { flex: 1; border: 0; outline: 0; background: transparent; color: var(--ui-fg); height: 100%; }
+.os-win11 .start11-search input::placeholder { color: var(--muted); }
+.os-win11 .start11-heading { display: flex; align-items: center; justify-content: space-between; margin: 26px 18px 12px; }
+.os-win11 .start11-small {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; font-size: 12px;
+  border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px;
+}
+.os-win11 .start11-small:hover { background: color-mix(in srgb, var(--surface-2) 92%, var(--ui-fg)); }
+.os-win11 .start11-pinned { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px 2px; padding: 0 6px; }
+.os-win11 .start11-pin {
+  height: 84px; border: 0; background: transparent; border-radius: 4px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 8px; font-size: 12px; padding: 4px 2px; min-width: 0;
+}
+.os-win11 .start11-pin span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.os-win11 .start11-pin img { width: 32px; height: 32px; }
+.os-win11 .start11-pin:hover, .os-win11 .start11-rec:hover, .os-win11 .start11-allitem:hover { background: var(--hover); }
+.os-win11 .start11-recommended { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; padding: 0 6px 10px; }
+.os-win11 .start11-rec { display: flex; align-items: center; gap: 14px; padding: 8px 12px; height: 58px; border: 0; background: transparent; border-radius: 4px; text-align: left; min-width: 0; }
+.os-win11 .start11-rec img { width: 30px; height: 30px; }
+.os-win11 .start11-rec span { display: flex; flex-direction: column; min-width: 0; font-size: 12px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.os-win11 .start11-rec small { color: var(--muted); margin-top: 2px; font-size: 11px; }
+.os-win11 .start11-all { padding: 0 18px 12px; }
+.os-win11 .start11-letter { padding: 10px 12px 4px; font-weight: 600; font-size: 13px; }
+.os-win11 .start11-allitem { width: 100%; display: flex; align-items: center; gap: 14px; padding: 6px 12px; border: 0; background: transparent; border-radius: 4px; text-align: left; font-size: 13px; }
+.os-win11 .start11-allitem img { width: 24px; height: 24px; }
+.os-win11 .start11-footer {
+  height: 64px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 48px;
+  border-top: 1px solid var(--line); background: color-mix(in srgb, var(--surface-3) 70%, transparent);
+}
+.os-win11 .start11-popwrap { position: relative; }
+.os-win11 .start11-user, .os-win11 .start11-power { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border: 0; background: transparent; border-radius: 4px; font-size: 12px; }
+.os-win11 .start11-user:hover, .os-win11 .start11-power:hover { background: var(--hover); }
+.os-win11 .start11-user img { width: 32px; height: 32px; }
+.os-win11 .start11-powermenu { bottom: 48px; right: -30px; }
+.os-win11 .start11-usermenu { bottom: 48px; left: 0; min-width: 240px; }
+
+/* Search */
+.os-win11 .search11 { bottom: 60px; left: 50%; margin-left: -330px; width: 660px; height: 600px; max-height: calc(100% - 72px); padding: 24px 28px; display: flex; flex-direction: column; }
+.os-win11 .search11-box { height: 40px; flex: none; }
+.os-win11 .search11-chips { display: flex; gap: 6px; margin: 16px 0 18px; flex: none; }
+.os-win11 .search11-chips button { padding: 5px 14px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface-2); font-size: 12px; }
+.os-win11 .search11-chips button.active { background: var(--accent-ui); color: var(--accent-fg); border-color: transparent; }
+.os-win11.theme-dark .search11-chips button.active { color: #000; }
+.os-win11 .search11-empty { display: flex; flex-direction: column; gap: 12px; overflow: auto; }
+.os-win11 .search11-top { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.os-win11 .search11-top .start11-pin { background: var(--surface-2); border: 1px solid var(--line); }
+.os-win11 .search11-top .start11-pin:hover { background: var(--hover); }
+.os-win11 .search11-quick { display: flex; flex-wrap: wrap; gap: 8px; }
+.os-win11 .search11-quick button { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 16px; font-size: 12px; }
+.os-win11 .search11-none { color: var(--muted); padding: 20px 4px; }
+.os-win11 .search11-results { flex: 1; min-height: 0; display: flex; gap: 14px; }
+.os-win11 .search11-list { flex: 1; overflow: auto; display: flex; flex-direction: column; gap: 2px; }
+.os-win11 .search11-list strong { margin: 0 0 8px; }
+.os-win11 .search11-result { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border: 0; background: transparent; border-radius: 4px; text-align: left; }
+.os-win11 .search11-result:hover { background: var(--hover); }
+.os-win11 .search11-result.best { background: var(--press); }
+.os-win11 .search11-result img { width: 26px; height: 26px; }
+.os-win11 .search11-result span { display: flex; flex-direction: column; font-size: 13px; }
+.os-win11 .search11-result small { color: var(--muted); font-size: 11px; }
+.os-win11 .search11-preview {
+  width: 230px; flex: none; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 26px 16px;
+  background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; text-align: center; align-self: flex-start;
+}
+.os-win11 .search11-preview img { width: 56px; height: 56px; }
+.os-win11 .search11-preview b { font-size: 16px; font-weight: 600; word-break: break-word; }
+.os-win11 .search11-preview small { color: var(--muted); word-break: break-all; }
+
+/* Quick settings */
+.os-win11 .quick11 { right: 12px; bottom: 60px; width: 360px; overflow: hidden; }
+.os-win11 .quick11-body { padding: 22px 22px 18px; }
+.os-win11 .quick11-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 14px; }
+.os-win11 .quick11-item { display: flex; flex-direction: column; gap: 6px; align-items: stretch; text-align: center; font-size: 12px; }
+.os-win11 .quick11-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.os-win11 .quick11-toggle { height: 48px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 6px; display: grid; place-items: center; }
+.os-win11 .quick11-toggle:hover { background: color-mix(in srgb, var(--surface-2) 92%, var(--ui-fg)); }
+.os-win11 .quick11-toggle.on { background: var(--accent-ui); color: var(--accent-fg); border-color: transparent; }
+.os-win11.theme-dark .quick11-toggle.on { color: #000; }
+.os-win11 .quick11-toggle.on:hover { background: color-mix(in srgb, var(--accent-ui) 88%, white); }
+.os-win11 .quick11-slider { display: flex; align-items: center; gap: 14px; margin-top: 22px; }
+.os-win11 .quick11-footer {
+  display: flex; align-items: center; justify-content: space-between; padding: 8px 14px 8px 22px;
+  border-top: 1px solid var(--line); background: color-mix(in srgb, var(--surface-3) 70%, transparent);
+}
+.os-win11 .quick11-battery { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.os-win11 .quick11-gear { border: 0; background: transparent; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 4px; }
+.os-win11 .quick11-gear:hover { background: var(--hover); }
+
+/* Notifications + calendar */
+.os-win11 .cal11-stack { position: absolute; right: 12px; bottom: 60px; z-index: 9000; width: 360px; display: flex; flex-direction: column; gap: 12px; max-height: calc(100% - 72px); }
+.os-win11 .cal11-stack .m-flyout { position: relative; }
+.os-win11 .notif11 { padding: 14px 16px; min-height: 0; overflow: auto; }
+.os-win11 .notif11-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.os-win11 .notif11-head button { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 3px 10px; font-size: 12px; }
+.os-win11 .cal11 { overflow: hidden; flex: none; }
+.os-win11 .cal11-date { padding: 14px 18px; border-bottom: 1px solid var(--line); font-weight: 600; font-size: 13px; }
+.os-win11 .cal11 .m-calendar { padding: 12px 14px 8px; }
+.os-win11 .cal11 .m-calendar-day { border-radius: 50%; width: 38px; margin: 0 auto; }
+.os-win11 .cal11-focus { display: flex; align-items: center; justify-content: space-between; padding: 10px 18px; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--surface-3) 70%, transparent); }
+
+/* Context menu: Win11 rounded acrylic */
+.os-win11 .context-menu .menu-dropdown { background: var(--flyout); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); animation: m-fade .1s; }
+
+/* Lock screen: clock centered top */
+.os-win11 .m-lock-clock { left: 0; right: 0; top: 11%; text-align: center; }
+.os-win11 .m-lock-time { font-weight: 600; font-size: 120px; }
+.os-win11 .m-lock-date { font-size: 24px; font-weight: 500; }
+.os-win11 .m-lock-button { border-radius: 4px; border: 1px solid rgba(255, 255, 255, .3); }
+
+/* Task view */
+.os-win11 .m-taskview-desktops { margin-bottom: 64px; }
+
+/* ---------------------------------------------------------------- core apps, Win11 flavour */
+.os-win11 .app-calculator { background: var(--mica-inactive); }
+.os-win11 .calc-key { border-radius: 4px; }
+.os-win11 .browser-toolbar { background: var(--mica-inactive); }
+.os-win11 .explorer-toolbar { background: var(--mica-inactive); }
+
+@media (max-width: 700px) {
+  .os-win11 .start11, .os-win11 .search11 { width: calc(100% - 16px); left: 8px; margin-left: 0; }
+  .os-win11 .start11-pinned { grid-template-columns: repeat(4, 1fr); }
+  .os-win11 .tb11 .m-taskbtn { width: 38px; }
+  .os-win11 .tb11-center { transform: translateX(-60px); }
+  .os-win11 .search11-preview { display: none; }
+}

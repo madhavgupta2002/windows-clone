@@ -1,0 +1,239 @@
+/* Windows 10 — flat Fluent, square corners, accent everywhere. Scoped under .os-win10. */
+.os-win10 {
+  --font: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --ui-font: 12px var(--font);
+  --radius: 0px;
+  --radius-lg: 0px;
+  --power-bg: color-mix(in srgb, var(--accent) 80%, #000);
+  --shadow-flyout: 0 0 0 1px rgba(0, 0, 0, .25), 0 8px 24px rgba(0, 0, 0, .4);
+}
+.os-win10.theme-light {
+  --acrylic: rgba(228, 228, 228, .88); --acrylic-solid: #e4e4e4;
+  --taskbar: rgba(220, 220, 220, .9); --tb-fg: #000; --tb-hover: rgba(255, 255, 255, .55);
+  --start-bg: rgba(228, 228, 228, .9); --tile-bg: var(--accent);
+  --title-active: #fff; --title-inactive: #fff;
+}
+.os-win10.theme-dark {
+  --acrylic: rgba(31, 31, 31, .88); --acrylic-solid: #1f1f1f;
+  --taskbar: rgba(16, 16, 16, .9); --tb-fg: #fff; --tb-hover: rgba(255, 255, 255, .1);
+  --start-bg: rgba(31, 31, 31, .9); --tile-bg: var(--accent);
+  --title-active: #1a1a1a; --title-inactive: #2b2b2b;
+  --ui-bg: #1f1f1f; --surface-3: #171717;
+}
+.os-win10 .m-flyout { border: 0; animation: w10-up .15s cubic-bezier(.1, .9, .2, 1); }
+@keyframes w10-up { from { opacity: 0; transform: translateY(14px); } }
+.os-win10 .win-logo i { background: currentColor; }
+
+/* ---------------------------------------------------------------- frames: square, 1px accent border */
+.os-win10 .mframe { border: 1px solid #aaa; box-shadow: 0 0 18px rgba(0, 0, 0, .25); }
+.os-win10 .mframe.active { border-color: var(--accent); box-shadow: 0 8px 32px rgba(0, 0, 0, .4); }
+.os-win10 .mframe.maximized { border: 0; box-shadow: none; }
+.os-win10 .mframe-titlebar { height: 31px; background: var(--title-inactive); padding-left: 8px; gap: 8px; }
+.os-win10 .mframe.active .mframe-titlebar { background: var(--title-active); }
+.os-win10.theme-dark .mframe { border-color: #444; }
+.os-win10.theme-dark .mframe.active { border-color: var(--accent); }
+.os-win10 .mframe-title { font-size: 12px; }
+.os-win10 .mframe-btn:hover:not(:disabled) { background: rgba(128, 128, 128, .2); }
+.os-win10 .mframe-btn.close:hover { background: #e81123; }
+
+/* ---------------------------------------------------------------- taskbar */
+.os-win10 .tb10 {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 40px; z-index: 9500;
+  display: flex; align-items: stretch; background: var(--taskbar); color: var(--tb-fg);
+}
+.os-win10.transparency-off .tb10 { background: color-mix(in srgb, var(--taskbar) 100%, #000); backdrop-filter: none; }
+.os-win10 .tb10 button { color: inherit; }
+.os-win10 .tb10-start, .os-win10 .tb10-btn { width: 48px; border: 0; background: transparent; display: grid; place-items: center; padding: 0; }
+.os-win10 .tb10-start:hover, .os-win10 .tb10-btn:hover, .os-win10 .tb10-start.pressed { background: var(--tb-hover); }
+.os-win10 .tb10-start:hover .win-logo i { background: var(--accent-ui); }
+.os-win10 .tb10-search {
+  width: 344px; display: flex; align-items: center; gap: 10px; padding: 0 12px; margin: 0;
+  background: #fff; color: #000; border: 1px solid #c8c8c8;
+}
+.os-win10.theme-dark .tb10-search { background: color-mix(in srgb, #fff 85%, transparent); }
+.os-win10 .tb10-search.active { background: #fff; border-color: var(--accent); }
+.os-win10 .tb10-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: #000; font-size: 14px; }
+.os-win10 .tb10-search input::placeholder { color: #444; }
+.os-win10 .tb10-apps { display: flex; }
+.os-win10 .tb10 .m-taskbtn { width: 48px; height: 40px; }
+.os-win10 .tb10 .m-taskbtn:hover { background: var(--tb-hover); }
+.os-win10 .tb10 .m-taskbtn.running::after { content: ""; position: absolute; left: 4px; right: 4px; bottom: 0; height: 2px; background: var(--accent-ui); }
+.os-win10 .tb10 .m-taskbtn.running.focused { background: var(--tb-hover); }
+.os-win10 .tb10-tray { margin-left: auto; display: flex; align-items: stretch; }
+.os-win10 .tb10-traybtn { border: 0; background: transparent; padding: 0 8px; display: flex; align-items: center; gap: 6px; position: relative; }
+.os-win10 .tb10-traybtn:hover, .os-win10 .tb10-traybtn.pressed { background: var(--tb-hover); }
+.os-win10 .tb10-lang { display: flex; align-items: center; padding: 0 8px; font-size: 12px; }
+.os-win10 .tb10-clock { flex-direction: column; justify-content: center; gap: 0; font-size: 12px; line-height: 16px; padding: 0 10px; text-align: center; }
+.os-win10 .tb10-action { padding: 0 12px; }
+.os-win10 .tb10-badge {
+  position: absolute; right: 4px; bottom: 6px; min-width: 15px; height: 15px; padding: 0 3px; font-size: 10px; line-height: 15px;
+  background: var(--accent-ui); color: var(--accent-fg); border-radius: 8px; border: 1px solid var(--taskbar);
+}
+.os-win10 .tb10 .m-showdesktop { width: 6px; border-left: 1px solid rgba(128, 128, 128, .5); }
+.os-win10 .tb10 .m-showdesktop:hover { background: var(--tb-hover); }
+
+/* ---------------------------------------------------------------- start menu */
+.os-win10 .start10 {
+  left: 0; bottom: 40px; width: 780px; height: 640px; max-height: calc(100% - 40px); max-width: 100%;
+  display: flex; background: var(--start-bg); color: var(--ui-fg); font-size: 14px;
+}
+.os-win10.transparency-off .start10 { background: var(--acrylic-solid); }
+.os-win10 .start10-rail {
+  width: 48px; flex: none; display: flex; flex-direction: column; overflow: hidden; z-index: 2;
+  transition: width .15s; background: inherit;
+}
+.os-win10 .start10-rail.expanded { width: 256px; background: var(--acrylic-solid); box-shadow: 4px 0 16px rgba(0, 0, 0, .35); position: absolute; top: 0; bottom: 0; }
+.os-win10 .start10-railspacer { flex: 1; }
+.os-win10 .start10-railbtn { width: 100%; height: 48px; flex: none; border: 0; background: transparent; display: flex; align-items: center; gap: 16px; padding: 0 16px; white-space: nowrap; text-align: left; }
+.os-win10 .start10-railbtn:hover { background: var(--hover); }
+.os-win10 .start10-railbtn img { width: 22px; height: 22px; margin-left: -3px; }
+.os-win10 .start10-railbtn span { font-size: 14px; }
+.os-win10 .start10-railbtn:first-child span { font-weight: 600; font-size: 13px; }
+.os-win10 .start10-popwrap { position: relative; }
+.os-win10 .start10-pop { left: 4px; bottom: 50px; min-width: 200px; background: var(--acrylic-solid); }
+.os-win10 .start10-list { width: 270px; flex: none; overflow-y: auto; padding: 6px 0 10px; }
+.os-win10 .start10-letter { padding: 10px 12px 4px; font-size: 14px; }
+.os-win10 .start10-letter.plain { font-weight: 600; }
+.os-win10 .start10-item { width: 100%; height: 38px; display: flex; align-items: center; gap: 10px; padding: 0 10px; border: 0; background: transparent; text-align: left; }
+.os-win10 .start10-item:hover { background: var(--hover); }
+.os-win10 .start10-itemicon { width: 32px; height: 32px; display: grid; place-items: center; background: var(--accent); }
+.os-win10 .start10-itemicon img { width: 22px; height: 22px; }
+.os-win10 .start10-tiles { flex: 1; overflow-y: auto; padding: 4px 16px 16px 8px; display: flex; flex-direction: column; gap: 6px; }
+.os-win10 .start10-tiles h3 { margin: 10px 0 8px; font-size: 13px; font-weight: 400; }
+.os-win10 .start10-tilegrid { display: grid; grid-template-columns: repeat(6, 48px); grid-auto-rows: 48px; gap: 4px; grid-auto-flow: dense; }
+.os-win10 .tile10 {
+  position: relative; border: 2px solid transparent; padding: 0; overflow: hidden; color: #fff;
+  background: color-mix(in srgb, var(--tile-bg) 82%, transparent); display: grid; place-items: center;
+  transition: transform .1s;
+}
+.os-win10 .tile10:hover { border-color: rgba(255, 255, 255, .45); }
+.os-win10 .tile10:active { transform: scale(.97); }
+.os-win10 .tile10.small { grid-column: span 1; grid-row: span 1; }
+.os-win10 .tile10.medium { grid-column: span 2; grid-row: span 2; }
+.os-win10 .tile10.wide { grid-column: span 4; grid-row: span 2; }
+.os-win10 .tile10.large { grid-column: span 4; grid-row: span 4; }
+.os-win10 .tile10 > img { width: 32px; height: 32px; }
+.os-win10 .tile10.small > img { width: 24px; height: 24px; }
+.os-win10 .tile10-label { position: absolute; left: 7px; bottom: 5px; font-size: 12px; text-shadow: 0 1px 2px rgba(0, 0, 0, .3); }
+.os-win10 .tile10-live { position: absolute; inset: 0; padding: 8px 8px 24px; text-align: left; overflow: hidden; }
+.os-win10 .tile10-calendar { display: flex; flex-direction: column; justify-content: center; }
+.os-win10 .tile10-calendar span { font-size: 14px; }
+.os-win10 .tile10-calendar b { font-size: 34px; font-weight: 300; line-height: 1; }
+.os-win10 .tile10-weather { display: flex; align-items: center; gap: 4px; }
+.os-win10 .tile10-weather img { flex: none; }
+.os-win10 .tile10-weather img { width: 32px; height: 32px; }
+.os-win10 .tile10-weather div { display: flex; flex-direction: column; font-size: 11px; }
+.os-win10 .tile10-weather b { font-size: 20px; font-weight: 400; }
+.os-win10 .tile10-weather small { opacity: .8; }
+.os-win10 .tile10-news { background: linear-gradient(transparent 30%, rgba(0, 0, 0, .5)), linear-gradient(135deg, #5b3a29, #a3542e); animation: w10-flip .5s ease-out; display: flex; align-items: flex-end; }
+.os-win10 .tile10-news p { margin: 0; font-size: 11px; font-weight: 600; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.os-win10 .tile10-photos { background: linear-gradient(160deg, hsl(calc(200deg + var(--hue)) 70% 55%), hsl(calc(260deg + var(--hue)) 60% 30%)); transition: background 1s; }
+@keyframes w10-flip { from { transform: translateY(100%); } }
+
+/* ---------------------------------------------------------------- search */
+.os-win10 .search10 { left: 48px; bottom: 40px; width: 640px; height: 580px; max-height: calc(100% - 40px); display: flex; flex-direction: column; background: var(--acrylic-solid); color: var(--ui-fg); font-size: 13px; }
+.os-win10 .search10-tabs { display: flex; gap: 18px; padding: 10px 18px 0; border-bottom: 1px solid var(--line); flex: none; }
+.os-win10 .search10-tabs span { padding: 6px 0 9px; border-bottom: 2px solid transparent; }
+.os-win10 .search10-tabs span.active { border-color: var(--accent-ui); font-weight: 600; }
+.os-win10 .search10 h4 { margin: 14px 0 8px; font-size: 13px; font-weight: 600; }
+.os-win10 .search10-home { padding: 6px 18px; overflow: auto; }
+.os-win10 .search10-cortana { display: flex; gap: 14px; align-items: center; padding: 14px 0 6px; }
+.os-win10 .search10-cortana div { display: flex; flex-direction: column; gap: 4px; }
+.os-win10 .search10-cortana b { font-size: 20px; font-weight: 300; }
+.os-win10 .search10-cortana small { color: var(--muted); }
+.os-win10 .search10-ring { width: 44px; height: 44px; border-radius: 50%; border: 5px solid var(--accent-ui); box-shadow: 0 0 18px var(--accent); flex: none; animation: w10-breathe 2.4s ease-in-out infinite; }
+@keyframes w10-breathe { 50% { transform: scale(.88); } }
+.os-win10 .search10-top { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.os-win10 .search10-top button { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 4px; border: 0; background: var(--hover); font-size: 12px; }
+.os-win10 .search10-top button:hover { background: var(--press); }
+.os-win10 .search10-top img { width: 32px; height: 32px; }
+.os-win10 .search10-quick { display: flex; flex-direction: column; }
+.os-win10 .search10-quick button { display: flex; align-items: center; gap: 10px; padding: 8px 6px; border: 0; background: transparent; text-align: left; }
+.os-win10 .search10-quick button:hover { background: var(--hover); }
+.os-win10 .search10-results { flex: 1; min-height: 0; display: flex; }
+.os-win10 .search10-list { width: 300px; flex: none; overflow: auto; padding: 0 0 12px; }
+.os-win10 .search10-list h4 { padding: 0 14px; }
+.os-win10 .search10-result { width: 100%; display: flex; align-items: center; gap: 12px; padding: 6px 14px; border: 0; background: transparent; text-align: left; }
+.os-win10 .search10-result:hover { background: var(--hover); }
+.os-win10 .search10-result.best { background: var(--accent-soft); padding: 10px 14px; }
+.os-win10 .search10-result img { width: 24px; height: 24px; }
+.os-win10 .search10-result.best img { width: 34px; height: 34px; }
+.os-win10 .search10-result span { display: flex; flex-direction: column; }
+.os-win10 .search10-result small { color: var(--muted); }
+.os-win10 .search10-preview { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 34px 16px; background: var(--hover); text-align: center; }
+.os-win10 .search10-preview img { width: 64px; height: 64px; margin-bottom: 8px; }
+.os-win10 .search10-preview b { font-size: 18px; font-weight: 400; word-break: break-word; }
+.os-win10 .search10-preview small { color: var(--muted); word-break: break-all; margin-bottom: 14px; }
+.os-win10 .search10-open { align-self: stretch; display: flex; gap: 10px; align-items: center; padding: 8px 12px; border: 0; border-top: 1px solid var(--line); background: transparent; color: var(--accent-ui); }
+.os-win10 .search10-open:hover { background: var(--hover); }
+
+/* ---------------------------------------------------------------- action center */
+.os-win10 .action10 {
+  right: 0; top: 0; bottom: 40px; width: 380px; display: flex; flex-direction: column;
+  background: var(--acrylic); border-left: 1px solid var(--line); animation: w10-slide .2s cubic-bezier(.1, .9, .2, 1);
+}
+@keyframes w10-slide { from { transform: translateX(100%); } }
+.os-win10 .action10-link { border: 0; background: transparent; color: var(--accent-ui); padding: 4px 0; font-size: 12px; }
+.os-win10 .action10-link:hover { text-decoration: underline; }
+.os-win10 .action10-head { display: flex; justify-content: flex-end; padding: 10px 16px 6px; }
+.os-win10 .action10-notices { flex: 1; overflow: auto; padding: 0 10px; }
+.os-win10 .action10 .m-notice { background: color-mix(in srgb, var(--surface-2) 70%, transparent); border: 0; }
+.os-win10 .action10 .m-notices-empty { padding-top: 40vh; }
+.os-win10 .action10-clear { display: flex; justify-content: flex-end; padding: 6px 16px; }
+.os-win10 .action10-bottom { flex: none; padding: 6px 10px 12px; }
+.os-win10 .action10-expand { margin: 0 6px 6px; }
+.os-win10 .action10-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; }
+.os-win10 .action10-tile {
+  height: 58px; border: 0; padding: 8px; background: color-mix(in srgb, var(--surface-2) 75%, transparent);
+  display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; text-align: left; font-size: 11px;
+}
+.os-win10 .action10-tile:hover { outline: 2px solid rgba(128, 128, 128, .5); outline-offset: -2px; }
+.os-win10 .action10-tile.on { background: var(--accent); color: #fff; }
+.os-win10 .action10-slider { display: flex; align-items: center; gap: 12px; padding: 14px 6px 4px; }
+
+/* ---------------------------------------------------------------- calendar */
+.os-win10 .cal10 { right: 0; bottom: 40px; width: 360px; padding: 18px 20px 14px; background: var(--acrylic-solid); }
+.os-win10 .cal10-time { font-size: 40px; font-weight: 300; line-height: 1.1; }
+.os-win10 .cal10-date { color: var(--accent-ui); margin: 6px 0 14px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.os-win10 .cal10 .m-calendar-day { height: 44px; border: 2px solid transparent; }
+.os-win10 .cal10 .m-calendar-day:hover { border-color: var(--border-darker); background: transparent; }
+.os-win10 .cal10 .m-calendar-day.today { background: var(--accent); color: #fff; outline: 2px solid var(--acrylic-solid); outline-offset: -4px; }
+.os-win10 .cal10-agenda { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
+.os-win10 .cal10-agenda span { color: var(--muted); }
+.os-win10 .cal10-agenda .action10-link { align-self: flex-start; }
+
+/* ---------------------------------------------------------------- lock screen: clock bottom-left */
+.os-win10 .m-lock-clock { left: 48px; bottom: 60px; }
+.os-win10 .m-lock-time { font-size: 120px; font-weight: 200; }
+.os-win10 .m-lock-date { font-size: 40px; font-weight: 200; }
+.os-win10 .m-lock-signin { gap: 18px; }
+.os-win10 .m-lock-button { border-radius: 0; }
+
+/* ---------------------------------------------------------------- task view, power, menus */
+.os-win10 .m-taskview { background: rgba(10, 10, 10, .55); }
+.os-win10 .m-taskview-card { border-radius: 0; }
+.os-win10 .m-taskview-desktops { margin-bottom: 48px; }
+.os-win10 .m-taskview-desktop { border-radius: 0; }
+.os-win10 .m-power { font-size: 24px; }
+.os-win10 .context-menu .menu-dropdown { background: var(--acrylic-solid); border: 1px solid var(--border-dark); box-shadow: 2px 2px 8px rgba(0, 0, 0, .3); padding: 4px 0; }
+.os-win10 .menu-item { padding: 6px 24px 6px 0; }
+.os-win10 .desktop-icon { border-radius: 0; }
+.os-win10 .m-notice { border-radius: 0; }
+
+/* ---------------------------------------------------------------- core apps: Edge-ish browser, flat explorer/calculator */
+.os-win10 .browser-toolbar { background: var(--surface-3); padding: 4px 6px; }
+.os-win10 .browser-address { border-radius: 0; background: var(--field-bg); border: 1px solid transparent; }
+.os-win10 .browser-address:focus { border-color: var(--accent-ui); box-shadow: none; }
+.os-win10 .app-calculator { background: var(--surface-3); }
+.os-win10 .calc-key { border: 0; background: color-mix(in srgb, var(--surface-2) 90%, transparent); }
+.os-win10 .calc-key:hover { outline: 2px solid var(--border-darker); outline-offset: -2px; }
+.os-win10 .settings-row { font-size: 14px; }
+
+@media (max-width: 800px) {
+  .os-win10 .tb10-search { width: 48px; padding: 0 16px; background: transparent; border: 0; color: inherit; }
+  .os-win10 .tb10-search input { display: none; }
+  .os-win10 .start10-tiles { display: none; }
+  .os-win10 .start10 { width: 330px; }
+  .os-win10 .search10 { left: 0; width: 100%; }
+  .os-win10 .tb10-lang { display: none; }
+}
