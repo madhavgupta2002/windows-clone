@@ -1,0 +1,353 @@
+/* Windows 1.0 / 2.0 / 3.1 — shared look. Root: .os-root.os-win16.os-win{1,2,3}.
+   Scheme colours arrive as --w16-* custom properties on .w16-screen (see palette.ts). */
+
+/* ───────────── fonts & contract variables ───────────── */
+.os-win16 {
+  --w16-sys-font: bold 14px/1.25 Fixedsys, 'Fixedsys Excelsior', 'Courier New', Courier, monospace;
+  --w16-dos-font: 16px/1.25 'Perfect DOS VGA 437', 'Lucida Console', 'Courier New', monospace;
+  font: var(--w16-sys-font);
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+  cursor: default;
+}
+.os-win3 {
+  --w16-sys-font: bold 12px/1.3 'MS Sans Serif', 'Microsoft Sans Serif', Arial, Helvetica, sans-serif;
+}
+.os-win16 .w16-screen {
+  --ui-font: var(--w16-sys-font);
+  --ui-fg: var(--w16-window-fg);
+  --ui-bg: var(--w16-window-bg);
+  --field-bg: #fff;
+  --field-fg: #000;
+  --border-light: #fff;
+  --border-dark: var(--w16-shadow);
+  --border-darker: #000;
+  --radius: 0;
+  position: absolute;
+  inset: 0;
+  font: var(--ui-font);
+  color: var(--ui-fg);
+}
+.os-win16 .w16-screen button, .os-win16 .w16-screen input, .os-win16 .w16-screen select, .os-win16 .w16-screen textarea { font: var(--ui-font); color: inherit; }
+
+/* ───────────── boot / DOS screens ───────────── */
+.os-win16 .w16-boot { position: absolute; inset: 0; background: #000; color: #aaa; cursor: wait; display: flex; }
+.os-win16 .w16-dos-screen { margin: 0; padding: 10px 14px; font: var(--w16-dos-font); color: #aaa; white-space: pre; }
+.os-win16 .w16-caret { animation: w16-blink 1s steps(1) infinite; }
+@keyframes w16-blink { 50% { opacity: 0; } }
+
+.os-win16 .w16-boot-splash { background: #fff; color: #000; align-items: center; justify-content: center; }
+.os-win3 .w16-boot-splash { background: #000; color: #fff; }
+.os-win16 .w16-splash { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; font-family: Arial, Helvetica, sans-serif; }
+.os-win16 .w16-splash-logo { display: flex; flex-direction: column; align-items: center; padding: 18px 40px 14px; border: 6px double #0000aa; }
+.os-win16 .w16-splash-1 .w16-splash-ms { font: italic bold 22px Georgia, 'Times New Roman', serif; letter-spacing: 1px; }
+.os-win16 .w16-splash-1 .w16-splash-name { font: bold 64px/1 Georgia, 'Times New Roman', serif; color: #0000aa; letter-spacing: 3px; }
+.os-win16 .w16-splash-2 .w16-splash-logo { border: 0; background: linear-gradient(#0000aa 0 0) bottom / 100% 6px no-repeat, linear-gradient(#aa0000 0 0) top / 100% 6px no-repeat; }
+.os-win16 .w16-splash-2 .w16-splash-ms { font: bold 22px Arial, Helvetica, sans-serif; letter-spacing: 6px; text-transform: uppercase; }
+.os-win16 .w16-splash-2 .w16-splash-name { font: 900 70px/1 Arial, Helvetica, sans-serif; color: #00aaaa; letter-spacing: -1px; -webkit-text-stroke: 1px #000; }
+.os-win16 .w16-splash-ver { font: bold 20px Arial, Helvetica, sans-serif; }
+.os-win16 .w16-splash-copy { font: 13px/1.5 'Courier New', monospace; }
+.os-win16 .w16-splash-3 { flex-direction: row; gap: 26px; text-align: left; align-items: center; }
+.os-win16 .w16-splash-3 .w16-splash-ms { font: bold 26px Arial, Helvetica, sans-serif; }
+.os-win16 .w16-splash-3 .w16-splash-name { font: bold 72px/1 'Times New Roman', Georgia, serif; letter-spacing: 1px; }
+.os-win16 .w16-splash-3 sup { font-size: 30%; vertical-align: super; }
+.os-win16 .w16-splash-3 .w16-splash-ver { font: bold 24px Arial, Helvetica, sans-serif; margin: 10px 0 18px; color: #fff; }
+.os-win16 .w16-splash-3 .w16-splash-copy { font: 12px Arial, Helvetica, sans-serif; color: #c0c0c0; }
+
+/* ───────────── desktop & minimized icons ───────────── */
+.os-win16 .w16-desktop { position: absolute; inset: 0; background-color: var(--w16-desktop); background-size: 8px 8px; image-rendering: pixelated; }
+.os-win16 .w16-desktop-icons {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 1;
+  display: flex; flex-wrap: wrap-reverse; align-items: flex-end; gap: 2px 4px; padding: 4px; pointer-events: none;
+}
+.os-win16 .w16-iconarea {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 64px; z-index: 1;
+  display: flex; align-items: center; gap: 6px; padding: 0 8px; overflow-x: auto;
+  background: #fff; border-top: 2px solid #000;
+}
+.os-win16 .w16-minicon { pointer-events: auto; width: 74px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.os-win16 .w16-minicon .icon { image-rendering: pixelated; }
+.os-win16 .w16-minicon-label {
+  max-width: 74px; padding: 0 2px; background: #fff; color: #000; font-weight: normal; font-size: 11px; line-height: 13px;
+  text-align: center; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.os-win16 .w16-minicon.selected .w16-minicon-label { background: var(--accent); color: var(--accent-fg); }
+.os-win1 .w16-minicon-label { font-size: 12px; }
+
+/* ───────────── window frame ───────────── */
+.os-win16 .w16-frame { height: 100%; display: flex; flex-direction: column; position: relative; border: 1px solid var(--w16-frame); background: var(--w16-border-inactive); }
+.os-win16 .w16-frame.active { background-color: var(--w16-border); }
+.os-win16 .w16-inner { flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--w16-window-bg); color: var(--w16-window-fg); }
+.os-win16 .w16-titlebar {
+  flex: none; display: flex; align-items: stretch; height: 19px; position: relative; z-index: 6;
+  background: var(--w16-title-inactive-bg); color: var(--w16-title-inactive-fg); border-bottom: 1px solid var(--w16-frame);
+}
+.os-win16 .w16-frame.active > .w16-inner > .w16-titlebar { background: var(--w16-title-bg); color: var(--w16-title-fg); }
+.os-win16 .w16-title { flex: 1; min-width: 0; align-self: center; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
+.os-win16 .w16-body { flex: 1; min-height: 0; display: flex; flex-direction: column; position: relative; }
+.os-win16 .w16-body > * { flex: 1; min-height: 0; }
+
+.os-win16 .w16-ctl { position: relative; display: flex; flex: none; }
+.os-win16 .w16-ctl .menu-dropdown { top: 100%; left: -1px; }
+.os-win16 .w16-sysbox, .os-win16 .w16-btn {
+  width: 19px; padding: 0; margin: 0; border: 0; display: grid; place-items: center; flex: none;
+  background: var(--w16-face); color: #000; fill: #000;
+}
+.os-win16 .w16-sysbox { border-right: 1px solid var(--w16-frame); }
+.os-win16 .w16-sysbox > span { display: block; width: 13px; height: 3px; background: #fff; border: 1px solid #000; box-sizing: content-box; box-shadow: 1px 1px 0 var(--w16-shadow); }
+.os-win16 .w16-btn { border-left: 1px solid var(--w16-frame); }
+
+/* 1.0: thin black frame, white control box, tiled */
+.os-win1 .w16-frame { border: 2px solid #000; }
+.os-win1 .w16-sysbox { background: #fff; width: 18px; }
+.os-win1 .w16-sysbox > span { width: 10px; height: 2px; box-shadow: none; }
+.os-win1 .w16-titlebar { height: 18px; }
+
+/* 2.0: sizing border, white boxes with ↓ ↑ arrows */
+.os-win2 .w16-frame.sizable { padding: 3px; }
+.os-win2 .w16-frame.sizable > .w16-inner { border: 1px solid #000; }
+.os-win2 .w16-frame.dialog { border: 4px double #000; background: #fff; }
+.os-win2 .w16-sysbox, .os-win2 .w16-btn { background: #fff; width: 18px; }
+.os-win2 .w16-titlebar { height: 18px; }
+.os-win2 .w16-btn:active { background: #000; fill: #fff; }
+.os-win2 .wm-maximized .w16-frame { padding: 0; border-width: 0; }
+
+/* 3.1: grey sizing border with corner notches, bevelled ▼ ▲ */
+.os-win3 {
+  --w3-notches:
+    linear-gradient(#000, #000) 19px 0 / 1px 3px no-repeat,
+    linear-gradient(#000, #000) calc(100% - 19px) 0 / 1px 3px no-repeat,
+    linear-gradient(#000, #000) 19px 100% / 1px 3px no-repeat,
+    linear-gradient(#000, #000) calc(100% - 19px) 100% / 1px 3px no-repeat,
+    linear-gradient(#000, #000) 0 19px / 3px 1px no-repeat,
+    linear-gradient(#000, #000) 0 calc(100% - 19px) / 3px 1px no-repeat,
+    linear-gradient(#000, #000) 100% 19px / 3px 1px no-repeat,
+    linear-gradient(#000, #000) 100% calc(100% - 19px) / 3px 1px no-repeat;
+}
+.os-win3 .w16-frame { padding: 3px; }
+.os-win3 .w16-frame > .w16-inner { border: 1px solid #000; }
+.os-win3 .w16-frame.sizable { background: var(--w3-notches), var(--w16-border-inactive); }
+.os-win3 .w16-frame.sizable.active { background: var(--w3-notches), var(--w16-border); }
+.os-win3 .w16-frame.dialog { background: var(--w16-title-bg); }
+.os-win3 .w16-frame.dialog:not(.active) { background: var(--w16-border-inactive); }
+.os-win3 .w16-frame.maximized { padding: 0; border-width: 0; }
+.os-win3 .w16-frame.maximized > .w16-inner { border-width: 0; }
+.os-win3 .w16-btn {
+  box-shadow: inset 1px 1px #fff, inset -1px -1px var(--w16-shadow), inset -2px -2px var(--w16-shadow);
+}
+.os-win3 .w16-btn:active { box-shadow: inset 1px 1px var(--w16-shadow); padding: 2px 0 0 2px; }
+.os-win3 .w16-btn svg { margin-top: -1px; }
+
+/* ───────────── menus ───────────── */
+.os-win16 .menubar {
+  background: var(--w16-menu-bg); color: var(--w16-menu-fg); border-bottom: 1px solid var(--w16-frame);
+  height: 19px; align-items: stretch; padding: 0 1px; font: var(--ui-font);
+}
+.os-win16 .menubar-item { display: flex; align-items: center; padding: 0 7px; }
+.os-win16 .menubar-item.open { background: var(--accent); color: var(--accent-fg); }
+.os-win16 .menu-dropdown {
+  background: var(--w16-menu-bg); color: var(--w16-menu-fg); border: 1px solid #000; padding: 1px 0;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, .55); min-width: 150px; font: var(--ui-font); text-align: left;
+}
+.os-win16 .menu-item { padding: 1px 14px 1px 0; }
+.os-win16 .menu-check { width: 18px; }
+.os-win16 .menu-item:hover:not(.disabled) { background: var(--accent); color: var(--accent-fg); }
+.os-win16 .menu-item.disabled { opacity: 1; color: #808080; }
+.os-win16 .menu-shortcut { opacity: 1; }
+.os-win16 .menu-separator { background: #000; height: 1px; margin: 3px 0; }
+.os-win1 .menu-dropdown, .os-win2 .menu-dropdown { box-shadow: none; border-width: 1px 2px 2px 1px; }
+.os-win16 .context-menu .menu-dropdown { position: static; }
+
+/* ───────────── controls ───────────── */
+.os-win16 .btn {
+  min-width: 70px; padding: 3px 12px; cursor: default; background: #fff; color: #000;
+  border: 1px solid #000; border-radius: 9px; font: var(--ui-font);
+}
+.os-win16 .btn.default { border-width: 2px; padding: 2px 11px; }
+.os-win16 .btn:active:not(:disabled) { background: #000; color: #fff; }
+.os-win16 .btn:disabled { color: #808080; }
+.os-win16 .btn:focus-visible { outline: 1px dotted #000; outline-offset: -5px; }
+.os-win3 .btn {
+  background: var(--w16-face); border-radius: 3px; padding: 4px 12px;
+  box-shadow: inset 1px 1px #fff, inset 2px 2px #fff, inset -1px -1px var(--w16-shadow), inset -2px -2px var(--w16-shadow);
+}
+.os-win3 .btn.default { padding: 3px 11px; }
+.os-win3 .btn:active:not(:disabled) { background: var(--w16-face); color: #000; box-shadow: inset 1px 1px var(--w16-shadow); padding: 5px 11px 3px 13px; }
+.os-win3 .btn.default:active:not(:disabled) { padding: 4px 10px 2px 12px; }
+
+.os-win16 .field { background: var(--field-bg); color: var(--field-fg); border: 1px solid #000; border-radius: 0; padding: 2px 3px; outline: none; font: var(--ui-font); }
+.os-win16 select.field { padding: 1px; }
+.os-win16 .sunken { border: 1px solid #000; background: #fff; }
+.os-win3 .sunken { border: 1px solid; border-color: var(--w16-shadow) #fff #fff var(--w16-shadow); box-shadow: inset 1px 1px #000; }
+.os-win16 .listview { background: #fff; color: #000; border: 1px solid #000; overflow: auto; }
+.os-win16 .listview-item { padding: 0 4px; white-space: nowrap; }
+.os-win16 .listview-item.selected { background: var(--accent); color: var(--accent-fg); }
+.os-win16 .toolbar { background: var(--w16-window-bg); border-bottom: 1px solid #000; }
+.os-win3 .toolbar { background: var(--w16-face); }
+.os-win16 .statusbar { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 1px 6px; border-top: 1px solid #000; background: var(--w16-window-bg); font-weight: normal; min-height: 18px; }
+.os-win16 .w16-check { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+
+/* 16-bit scroll bars (WebKit / Blink) */
+.os-win16 ::-webkit-scrollbar { width: 17px; height: 17px; }
+.os-win16 ::-webkit-scrollbar-track { background: #c0c0c0; }
+.os-win1 ::-webkit-scrollbar-track, .os-win2 ::-webkit-scrollbar-track {
+  background: repeating-conic-gradient(#000 0 25%, #fff 0 50%) 0 0 / 2px 2px;
+}
+.os-win16 ::-webkit-scrollbar-thumb { background: #fff; border: 1px solid #000; }
+.os-win3 ::-webkit-scrollbar-thumb { background: #c0c0c0; box-shadow: inset 1px 1px #fff, inset -1px -1px #808080; }
+.os-win16 ::-webkit-scrollbar-button:single-button { display: block; width: 17px; height: 17px; background: #fff center / 9px 9px no-repeat; border: 1px solid #000; }
+.os-win3 ::-webkit-scrollbar-button:single-button { background-color: #c0c0c0; box-shadow: inset 1px 1px #fff, inset -1px -1px #808080; }
+.os-win16 ::-webkit-scrollbar-button:single-button:vertical:decrement { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'><path d='M0 7h9L4.5 2z'/></svg>"); }
+.os-win16 ::-webkit-scrollbar-button:single-button:vertical:increment { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'><path d='M0 2h9L4.5 7z'/></svg>"); }
+.os-win16 ::-webkit-scrollbar-button:single-button:horizontal:decrement { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'><path d='M7 0v9L2 4.5z'/></svg>"); }
+.os-win16 ::-webkit-scrollbar-button:single-button:horizontal:increment { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'><path d='M2 0v9l5-4.5z'/></svg>"); }
+.os-win16 ::-webkit-scrollbar-corner { background: #c0c0c0; }
+
+/* ───────────── in-app modal dialogs ───────────── */
+.os-win16 .w16-modal-backdrop { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; }
+.os-win16 .w16-modal { background: #fff; color: #000; border: 4px double #000; min-width: 260px; max-width: 92%; box-shadow: 3px 3px 0 rgba(0, 0, 0, .4); }
+.os-win16 .w16-modal-caption { display: none; }
+.os-win3 .w16-modal { border: 1px solid #000; padding: 3px; background: var(--w16-title-bg); box-shadow: none; }
+.os-win3 .w16-modal > * { background: #fff; }
+.os-win3 .w16-modal-caption { display: block; text-align: center; background: var(--w16-title-bg); color: var(--w16-title-fg); padding: 1px 0 2px; border: 1px solid #000; border-bottom: 0; }
+.os-win3 .w16-modal-body { border: 1px solid #000; border-width: 1px 1px 0; }
+.os-win3 .w16-modal-buttons { border: 1px solid #000; border-top: 0; }
+.os-win16 .w16-modal-body { padding: 12px 14px 8px; }
+.os-win16 .w16-modal-buttons { display: flex; justify-content: center; gap: 12px; padding: 6px 12px 12px; }
+.os-win16 .w16-prompt { display: flex; flex-direction: column; gap: 6px; }
+.os-win16 .w16-prompt input { width: 100%; min-width: 240px; }
+.os-win16 .w16-confirm-text { padding: 4px 0; }
+
+/* dialog apps (exit, task list) */
+.os-win16 .w16-dlg-body { display: flex; align-items: center; gap: 14px; padding: 14px 16px 6px; }
+.os-win16 .w16-dlg-body p { margin: 0; }
+.os-win16 .w16-dlg-buttons { display: flex; justify-content: center; gap: 10px; padding: 6px 8px 10px; flex: none; }
+.os-win16 .app-w16-exit { display: flex; flex-direction: column; justify-content: center; background: #fff; }
+.os-win16 .app-w16-tasklist { display: flex; flex-direction: column; padding: 8px 8px 0; background: #fff; }
+.os-win16 .app-w16-tasklist .listview { flex: 1; min-height: 0; }
+.os-win16 .app-w16-tasklist .btn { min-width: 0; flex: 1; }
+
+/* ───────────── shared apps (contract classes) ───────────── */
+.os-win16 .app { font: var(--ui-font); }
+.os-win16 .app-notepad textarea { font: var(--ui-font); background: #fff; color: #000; border: 0; outline: none; resize: none; }
+.os-win1 .app-notepad textarea, .os-win2 .app-notepad textarea { font-weight: normal; }
+
+.os-win16 .calc-display { background: #fff; color: #000; border: 1px solid #000; text-align: right; font: bold 16px 'Courier New', monospace; padding: 2px 6px; }
+.os-win16 .calc-key { background: #fff; color: #000; border: 1px solid #000; border-radius: 6px; font: var(--ui-font); }
+.os-win16 .calc-key:active { background: #000; color: #fff; }
+.os-win3 .calc-key { background: var(--w16-face); border-radius: 3px; color: #0000ff; box-shadow: inset 1px 1px #fff, inset -1px -1px var(--w16-shadow), inset -2px -2px var(--w16-shadow); }
+.os-win3 .calc-key.op, .os-win3 .calc-key.eq, .os-win3 .calc-key.fn, .os-win3 .calc-key.mem { color: #ff0000; }
+.os-win3 .calc-key:active { background: var(--w16-face); color: #000; box-shadow: inset 1px 1px var(--w16-shadow); }
+
+.os-win16 .explorer-toolbar, .os-win16 .explorer-address { background: var(--w16-window-bg); border-bottom: 1px solid #000; }
+.os-win16 .explorer-tree, .os-win16 .explorer-list { background: #fff; color: #000; }
+.os-win16 .explorer-tree { border-right: 1px solid #000; }
+.os-win16 .explorer-item.selected, .os-win16 .explorer-item.selected * { background: var(--accent); color: var(--accent-fg); }
+
+.os-win16 .app-minesweeper { background: #c0c0c0; }
+.os-win16 .mine-header { background: #c0c0c0; border: 2px solid; border-color: #808080 #fff #fff #808080; }
+.os-win16 .mine-counter { background: #000; color: #f00; font: bold 20px/1 'Courier New', monospace; padding: 1px 2px; border: 1px solid; border-color: #808080 #fff #fff #808080; }
+.os-win16 .mine-face { background: #c0c0c0; border: 2px solid; border-color: #fff #808080 #808080 #fff; }
+.os-win16 .mine-face:active { border-color: #808080 #fff #fff #808080; }
+.os-win16 .mine-grid { border: 3px solid; border-color: #808080 #fff #fff #808080; background: #c0c0c0; }
+.os-win16 .mine-cell { background: #c0c0c0; border: 2px solid; border-color: #fff #808080 #808080 #fff; font: bold 13px/1 Arial, sans-serif; }
+.os-win16 .mine-cell.open { border: 0; border-left: 1px solid #808080; border-top: 1px solid #808080; }
+.os-win16 .mine-cell.boom { background: #f00; }
+.os-win16 .mine-cell.n1 { color: #0000ff; } .os-win16 .mine-cell.n2 { color: #008000; }
+.os-win16 .mine-cell.n3 { color: #ff0000; } .os-win16 .mine-cell.n4 { color: #000080; }
+.os-win16 .mine-cell.n5 { color: #800000; } .os-win16 .mine-cell.n6 { color: #008080; }
+.os-win16 .mine-cell.n7 { color: #000; } .os-win16 .mine-cell.n8 { color: #808080; }
+
+.os-win16 .paint-tools, .os-win16 .paint-palette { background: var(--w16-window-bg); }
+.os-win3 .paint-tools, .os-win3 .paint-palette { background: var(--w16-face); }
+.os-win16 .calc-key, .os-win16 .paint-tool { min-width: 0; padding: 0; }
+.os-win16 .paint-tool { font-size: 14px; }
+.os-win16 .paint-tool.active { background: #000; }
+.os-win16 .paint-tool.active > * { filter: invert(1); }
+.os-win3 .paint-tool.active { background: var(--w16-face); box-shadow: inset 1px 1px #000, inset 2px 2px var(--w16-shadow); filter: none; }
+.os-win3 .paint-tool.active > * { filter: none; }
+.os-win16 .paint-swatch { border: 1px solid #000; }
+.os-win16 .paint-canvas { background: #fff; }
+
+.os-win16 .msgbox-icon { width: 32px; height: 32px; flex: none; font-size: 0; color: transparent; background: center / 32px 32px no-repeat; }
+.os-win16 .msgbox-icon.info { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%230000ff' stroke='%23000'/><rect x='14' y='13' width='4' height='11' fill='%23fff'/><rect x='14' y='7' width='4' height='4' fill='%23fff'/></svg>"); }
+.os-win16 .msgbox-icon.warning { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%23ffff00' stroke='%23000'/><rect x='14' y='6' width='4' height='13' fill='%23000'/><rect x='14' y='22' width='4' height='4' fill='%23000'/></svg>"); }
+.os-win16 .msgbox-icon.error { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M10 2h12l8 8v12l-8 8H10l-8-8V10z' fill='%23ff0000' stroke='%23000'/><text x='16' y='20' text-anchor='middle' font-family='Arial' font-weight='bold' font-size='9' fill='%23fff'>STOP</text></svg>"); }
+.os-win16 .msgbox-icon.question { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%2300ff00' stroke='%23000'/><text x='16' y='23' text-anchor='middle' font-family='Arial' font-weight='bold' font-size='20' fill='%23000'>?</text></svg>"); }
+.os-win1 .msgbox-icon, .os-win2 .msgbox-icon { filter: grayscale(1) contrast(4); }
+.os-win16 .app-msgbox, .os-win16 .app-about { background: #fff; color: #000; }
+.os-win16 .about-logo {
+  width: 64px; height: 56px; flex: none; font-size: 0; color: transparent;
+  background: center / contain no-repeat url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 85'><path d='M22 10 Q40 2 58 10 L56 40 Q38 32 20 40 Z' fill='%23f00'/><path d='M62 11 Q78 4 96 12 L94 42 Q76 34 60 41 Z' fill='%2300c000'/><path d='M19 44 Q37 36 55 44 L53 74 Q35 66 17 74 Z' fill='%2300f'/><path d='M59 45 Q75 38 93 46 L91 76 Q73 68 57 75 Z' fill='%23fc0'/></svg>");
+}
+.os-win1 .about-logo, .os-win2 .about-logo {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 56' shape-rendering='crispEdges'><rect x='2' y='2' width='60' height='52' fill='%23fff' stroke='%23000' stroke-width='2'/><rect x='3' y='3' width='58' height='9' fill='%230000aa'/><line x1='32' y1='12' x2='32' y2='54' stroke='%23000' stroke-width='2'/><line x1='32' y1='33' x2='62' y2='33' stroke='%23000' stroke-width='2'/></svg>");
+}
+.os-win16 .browser-toolbar, .os-win16 .browser-address { background: var(--w16-window-bg); }
+
+/* ───────────── MS-DOS Executive ───────────── */
+.os-win16 .app-w16-dosexec { display: flex; flex-direction: column; background: #fff; color: #000; position: relative; }
+.os-win16 .dosexec-drives { flex: none; display: flex; align-items: center; gap: 10px; padding: 3px 6px; border-bottom: 1px solid #000; }
+.os-win16 .dosexec-drive { display: flex; align-items: center; gap: 4px; padding: 1px 4px; border: 0; background: none; }
+.os-win16 .dosexec-drive-img { width: 22px; height: 12px; border: 1px solid #000; background: linear-gradient(#000 0 0) 3px 50% / 10px 2px no-repeat, #fff; }
+.os-win16 .dosexec-drive.current { background: #000; color: #fff; }
+.os-win16 .dosexec-drive.current .dosexec-drive-img { border-color: #fff; }
+.os-win16 .dosexec-path { margin-left: 16px; white-space: nowrap; }
+.os-win16 .dosexec-seg:hover { text-decoration: underline; cursor: pointer; }
+.os-win16 .dosexec-list { flex: 1; min-height: 0; outline: none; padding: 4px 6px; }
+.os-win16 .dosexec-list.short { display: flex; flex-direction: column; flex-wrap: wrap; align-content: flex-start; overflow-x: auto; overflow-y: hidden; }
+.os-win16 .dosexec-list.long { overflow: auto; }
+.os-win16 .dosexec-item { white-space: pre; padding: 0 4px; font-weight: normal; line-height: 18px; }
+.os-win16 .dosexec-list.short .dosexec-item { width: 15ch; }
+.os-win16 .dosexec-list.long .dosexec-item { display: grid; grid-template-columns: 10ch 5ch 11ch 11ch 8ch; width: max-content; }
+.os-win16 .dosexec-item .c-size { text-align: right; padding-right: 2ch; }
+.os-win16 .dosexec-item.dir { font-weight: bold; }
+.os-win16 .dosexec-item.selected { background: var(--accent); color: var(--accent-fg); }
+.os-win16 .dosexec-empty { padding: 4px; }
+.os-win16 .dosexec-info { margin: 0; font: inherit; font-weight: normal; }
+
+/* ───────────── MS-DOS Prompt ───────────── */
+.os-win16 .app-w16-dosprompt { background: #000; color: #c0c0c0; overflow: auto; cursor: text; }
+.os-win16 .dosprompt-out { margin: 0; padding: 4px 6px; font: var(--w16-dos-font); white-space: pre-wrap; word-break: break-all; }
+.os-win16 .dosprompt-line { white-space: nowrap; }
+.os-win16 .dosprompt-line input { font: var(--w16-dos-font); color: inherit; background: transparent; border: 0; outline: none; padding: 0; margin: 0; caret-color: transparent; min-width: 1ch; }
+
+/* ───────────── Clock ───────────── */
+.os-win16 .app-w16-clock { display: flex; flex-direction: column; background: var(--w16-window-bg); }
+.os-win16 .clock-face-wrap { flex: 1; min-height: 0; display: grid; place-items: center; padding: 6px; }
+.os-win16 .clock-analog { width: 100%; height: 100%; }
+.os-win16 .clock-hour-dot { fill: var(--w16-title-bg); }
+.os-win16 .clock-min-dot { fill: #000; }
+.os-win16 .clock-hand { stroke: #000; }
+.os-win16 .clock-second { stroke: var(--w16-title-bg); }
+.os-win3 .clock-face-wrap { background: #c0c0c0; }
+.os-win3 .clock-hour-dot { fill: #008080; stroke: #000; stroke-width: .4; }
+.os-win16 .clock-digital { text-align: center; }
+.os-win16 .clock-digital-time { font: bold 30px 'Courier New', monospace; white-space: pre; }
+.os-win16 .clock-digital-time small { font-size: 60%; }
+.os-win16 .clock-date, .os-win16 .clock-digital-date { text-align: center; padding: 2px 0 4px; font-weight: normal; }
+
+/* ───────────── Reversi ───────────── */
+.os-win16 .app-w16-reversi { display: flex; flex-direction: column; background: #fff; }
+.os-win16 .reversi-board-wrap { flex: 1; min-height: 0; container-type: size; display: grid; place-items: center; padding: 6px; }
+.os-win16 .reversi-board {
+  width: min(100cqw, 100cqh); height: min(100cqw, 100cqh);
+  display: grid; grid-template: repeat(8, 1fr) / repeat(8, 1fr); gap: 1px; background: #000; border: 2px solid #000;
+}
+.os-win16 .reversi-cell { background: #00aa00; display: grid; place-items: center; }
+.os-win1 .reversi-cell { background: #aaa; }
+.os-win16 .reversi-cell.legal:hover { cursor: pointer; background-color: #55ff55; }
+.os-win1 .reversi-cell.legal:hover { background-color: #fff; }
+.os-win16 .reversi-cell.hint { box-shadow: inset 0 0 0 2px #ff0; }
+.os-win16 .reversi-disc { width: 76%; height: 76%; border-radius: 50%; border: 1px solid #000; }
+.os-win16 .reversi-disc.black { background: #000; }
+.os-win16 .reversi-disc.white { background: #fff; }
+.os-win16 .reversi-status > span { flex: 1; white-space: nowrap; border: 0; box-shadow: none; padding: 0; }
+.os-win16 .reversi-status > span:nth-child(2) { text-align: center; }
+.os-win16 .reversi-status > span:last-child { text-align: right; }
+
+/* File Manager / Explorer tweaks */
+.os-win16 .explorer-item, .os-win16 .tree-row { font-weight: normal; }
+.os-win16 .tree-row.selected .tree-label { background: var(--accent); color: var(--accent-fg); }
+.os-win16 .explorer-item .icon { image-rendering: pixelated; }
+.os-win1 .statusbar > span, .os-win2 .statusbar > span { border: 0; }

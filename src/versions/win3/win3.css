@@ -1,0 +1,53 @@
+/* Windows 3.1 only: Program Manager and Control Panel. Frame / menus / controls live in win16.css. */
+
+/* ───────────── Program Manager ───────────── */
+.os-win3 .app-w3-progman { display: flex; flex-direction: column; outline: none; position: relative; background: #fff; }
+.os-win3 .pm-client { flex: 1; min-height: 0; position: relative; overflow: hidden; background: #fff; }
+.os-win3 .pm-group { min-width: 0; }
+.os-win3 .pm-items {
+  display: flex; flex-direction: row; flex-wrap: wrap; align-content: flex-start; gap: 2px 0; padding: 4px 2px;
+  overflow: auto; background: #fff;
+}
+.os-win3 .pm-item, .os-win3 .pm-group-icon {
+  width: 76px; flex: none; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 3px 1px;
+  text-align: center; font-weight: normal; font-size: 11px; line-height: 13px; color: #000;
+}
+.os-win3 .pm-item .icon, .os-win3 .pm-group-icon .icon { image-rendering: pixelated; }
+.os-win3 .pm-item span, .os-win3 .pm-group-icon span { padding: 0 2px; overflow-wrap: anywhere; }
+.os-win3 .pm-item.selected span, .os-win3 .pm-group-icon.selected span { background: var(--accent); color: var(--accent-fg); }
+.os-win3 .pm-group-icon { position: absolute; }
+.os-win3 .pm-resize { position: absolute; right: -3px; bottom: -3px; width: 14px; height: 14px; cursor: nwse-resize; }
+
+/* ───────────── Control Panel ───────────── */
+.os-win3 .app-w3-control { display: flex; flex-direction: column; background: #fff; }
+.os-win3 .cp-icons { flex: 1; min-height: 0; display: flex; flex-wrap: wrap; align-content: flex-start; padding: 6px; overflow: auto; }
+
+.os-win3 .app-w3-cp-color, .os-win3 .app-w3-cp-desktop, .os-win3 .app-w3-cp-datetime {
+  display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 0; background: #fff; color: #000;
+}
+.os-win3 .cp-row { display: flex; align-items: center; gap: 10px; }
+.os-win3 .cp-row > span { min-width: 60px; }
+.os-win3 .cp-row select, .os-win3 .cp-row input { flex: 1; }
+.os-win3 .cp-group { border: 1px solid #000; padding: 6px 8px 8px; display: flex; gap: 12px; align-items: flex-start; margin: 0; }
+.os-win3 .cp-group legend { padding: 0 4px; }
+.os-win3 .cp-pattern-preview { width: 64px; height: 64px; flex: none; border: 1px solid #000; background-color: var(--w16-desktop); background-size: 8px 8px; image-rendering: pixelated; }
+
+.os-win3 .cp-preview {
+  flex: none; height: 130px; position: relative; border: 1px solid #000; background: var(--w16-desktop); font-size: 11px;
+}
+.os-win3 .cp-pv-win { position: absolute; border: 1px solid #000; padding: 2px; background: var(--w16-border-inactive); }
+.os-win3 .cp-pv-win.inactive { left: 10px; top: 8px; width: 170px; height: 60px; }
+.os-win3 .cp-pv-win.active { left: 48px; top: 34px; width: 230px; height: 86px; background: var(--w16-border); display: flex; flex-direction: column; }
+.os-win3 .cp-pv-title { text-align: center; border: 1px solid #000; background: var(--w16-title-inactive-bg); color: var(--w16-title-inactive-fg); }
+.os-win3 .cp-pv-win.inactive .cp-pv-title { height: 100%; }
+.os-win3 .cp-pv-win.active .cp-pv-title { background: var(--w16-title-bg); color: var(--w16-title-fg); }
+.os-win3 .cp-pv-menu { display: flex; gap: 8px; padding: 1px 4px; background: var(--w16-menu-bg); color: var(--w16-menu-fg); border: 1px solid #000; border-top: 0; }
+.os-win3 .cp-pv-menu .disabled { color: #808080; }
+.os-win3 .cp-pv-menu .hl { background: var(--accent); color: var(--accent-fg); padding: 0 2px; }
+.os-win3 .cp-pv-text { flex: 1; padding: 3px 6px; background: var(--w16-window-bg); color: var(--w16-window-fg); border: 1px solid #000; border-top: 0; }
+.os-win3 .cp-swatch-row { align-items: flex-start; }
+.os-win3 .cp-swatches { display: grid; grid-template-columns: repeat(9, 18px); gap: 3px; }
+.os-win3 .cp-swatch { width: 18px; height: 14px; padding: 0; border: 1px solid #000; }
+.os-win3 .cp-swatch.auto { background-image: linear-gradient(135deg, transparent 45%, #000 45% 55%, transparent 55%) !important; }
+.os-win3 .cp-swatch.selected { outline: 2px solid #000; outline-offset: 1px; }
+.os-win3 .app-w3-cp-color .w16-dlg-buttons, .os-win3 .app-w3-cp-desktop .w16-dlg-buttons, .os-win3 .app-w3-cp-datetime .w16-dlg-buttons { margin-top: auto; }
