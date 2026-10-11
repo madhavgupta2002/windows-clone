@@ -69,3 +69,31 @@ Class names apps use (version CSS may restyle them):
 - browser: `.browser-toolbar`, `.browser-address`, `.browser-page`
 - msgbox: `.msgbox-icon(.info,.warning,.error,.question)`, `.msgbox-text`, `.msgbox-buttons`
 - about: `.about-logo`, `.about-text`
+
+All default app styles in `core/apps/apps.css` are wrapped in `:where()` (zero specificity), so any version rule wins, even a bare `.btn {}`. Each variable has a classic fallback (`--ui-bg` → `#c0c0c0`, `--accent` → `#000080`, …).
+
+Optional extra variables: `--editor-font` (Notepad), `--calc-op-fg` / `--calc-fn-fg` (Calculator key text), `--mine-cell` (Minesweeper cell size, default `16px`), `--mine-bg`, `--paint-workspace` (grey area around the Paint canvas).
+
+Additional class names (additive to the list above):
+
+- shared file panels (Notepad/Paint): `form.save-bar` (inline "Save as" bar, also `.toolbar`), `.file-panel`, `.file-panel-title`, `.file-panel-list` (also `.listview.sunken`), `.file-panel-actions`
+- notepad: `textarea.notepad-editor(.nowrap)` (also `.field`)
+- calculator: `.calc-body`, `.calc-memory` (the "M" indicator), `.calc-value`, `.calc-key.mem`, `.calc-key-tall` (=), `.calc-key-wide` (0)
+- explorer: `.explorer-body`, `.explorer-list.icons|.details` (also `.listview.sunken`), `.explorer-header` (details column header), `.explorer-icon`, `.explorer-name`, `.explorer-size`, `.explorer-type`, `.explorer-modified`, `.explorer-rename` (inline rename input); tree: `.tree-node`, `.tree-row(.selected)`, `.tree-toggle`, `.tree-label`, `.tree-children`
+- minesweeper: `.mine-game` (sized to content; the window resizes itself to fit it), `.mine-cell.wrong` (wrongly flagged cell after a loss)
+- paint: `.paint-main`, `.paint-tool[data-tool=pencil|brush|eraser|fill|picker|line|rect|ellipse]`, `.paint-sizes`, `.paint-size(.active)`, `.paint-surface`, `.paint-overlay`, `.paint-current` > `.paint-primary` / `.paint-secondary`, `.paint-swatches`
+- browser: `.browser-doc` (built-in page), `.browser-web` > `.browser-notice` + `iframe.browser-frame`, `.browser-link`; built-in pages use `.web-*` classes and deliberately look like the web, not the OS
+- msgbox / about: `.msgbox-body`, `.about-body`, `.about-product`, `.about-version`, `.about-copyright`, `.about-extra`. About reuses `.msgbox-buttons`. `.about-logo` shows a neutral placeholder; versions should restyle it.
+
+### Shared app args
+
+| App | args |
+|---|---|
+| notepad | `path?` |
+| explorer | `path?` (default `documentsPath`; `""` = drive list), `tree?: boolean` (default true), `view?: 'icons'\|'details'`, `folderIcon?`, `fileIcon?`, `driveIcon?`, `computerIcon?`, `computerLabel?` (default "My Computer"), `title?` (fixed title; otherwise it follows the folder) |
+| paint | `path?` (`.bmp` whose content is an image data URL; Save writes a PNG data URL) |
+| browser | `url?`, `home?` (default `about:home`), `homeTitle?` (default `os.about.product`). Built-in pages: `about:home`, `about:search?q=`, `about:retro`, `about:news`, `about:guestbook`, `about:webring`, `about:blank` |
+| msgbox | `title`, `text`, `icon?: info\|warning\|error\|question`, `buttons?: string[]` (default `['OK']`), `onButton?: (label) => void` |
+| about | `logo?` (icon src rendered inside `.about-logo`) |
+
+Notepad, Paint, Explorer and Browser keep the window title in sync (for example `*readme.txt - Notepad`), using the version's registered app title.

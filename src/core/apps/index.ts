@@ -15,7 +15,7 @@ import './apps.css'
  */
 export const coreApps = {
   notepad: { id: 'notepad', title: 'Notepad', component: Notepad, width: 560, height: 400 },
-  calculator: { id: 'calculator', title: 'Calculator', component: Calculator, width: 260, height: 300, resizable: false },
+  calculator: { id: 'calculator', title: 'Calculator', component: Calculator, width: 280, height: 330, resizable: false },
   explorer: { id: 'explorer', title: 'Explorer', component: Explorer, width: 640, height: 440 },
   minesweeper: { id: 'minesweeper', title: 'Minesweeper', component: Minesweeper, width: 190, height: 280, resizable: false, single: true },
   paint: { id: 'paint', title: 'Paint', component: Paint, width: 640, height: 480 },
