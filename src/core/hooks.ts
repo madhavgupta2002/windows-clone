@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type SetStateAction } from 'react'
 
 /** Current time, refreshed every `intervalMs`. */
 export function useClock(intervalMs = 1000) {
@@ -27,17 +27,40 @@ export function useClickOutside<T extends HTMLElement>(active: boolean, onOutsid
   return ref
 }
 
-/** Persisted per-version preference (wallpaper, theme, ...). */
+const prefListeners = new Map<string, Set<() => void>>()
+const prefCache = new Map<string, unknown>()
+
+function readPref<T>(storageKey: string, initial: T): T {
+  if (prefCache.has(storageKey)) return prefCache.get(storageKey) as T
+  let value = initial
+  try {
+    const raw = localStorage.getItem(storageKey)
+    if (raw !== null) value = JSON.parse(raw) as T
+  } catch { /* corrupt — use initial */ }
+  prefCache.set(storageKey, value)
+  return value
+}
+
+/**
+ * Persisted preference (wallpaper, theme, ...). Every component using the same key
+ * shares one value and re-renders when any of them sets it.
+ */
 export function usePref<T>(key: string, initial: T) {
   const storageKey = `winclone.pref.${key}`
-  const [value, setValue] = useState<T>(() => {
-    try {
-      const raw = localStorage.getItem(storageKey)
-      return raw === null ? initial : (JSON.parse(raw) as T)
-    } catch { return initial }
-  })
-  useEffect(() => {
-    try { localStorage.setItem(storageKey, JSON.stringify(value)) } catch { /* quota */ }
-  }, [storageKey, value])
+  const subscribe = useCallback((l: () => void) => {
+    const set = prefListeners.get(storageKey) ?? new Set()
+    set.add(l)
+    prefListeners.set(storageKey, set)
+    return () => { set.delete(l) }
+  }, [storageKey])
+  const value = useSyncExternalStore(subscribe, () => readPref(storageKey, initial))
+  const setValue = useCallback((next: SetStateAction<T>) => {
+    const prev = readPref(storageKey, initial)
+    const resolved = typeof next === 'function' ? (next as (p: T) => T)(prev) : next
+    if (Object.is(resolved, prev)) return
+    prefCache.set(storageKey, resolved)
+    try { localStorage.setItem(storageKey, JSON.stringify(resolved)) } catch { /* quota */ }
+    prefListeners.get(storageKey)?.forEach(l => l())
+  }, [storageKey]) // eslint-disable-line react-hooks/exhaustive-deps
   return [value, setValue] as const
 }

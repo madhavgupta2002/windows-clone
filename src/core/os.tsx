@@ -112,9 +112,10 @@ export function OSProvider(props: OSProviderProps) {
     setFocused(id)
   }, [])
 
-  const open = useCallback((appId: string, args: Record<string, unknown> = {}) => {
+  const open = useCallback((appId: string, callerArgs: Record<string, unknown> = {}) => {
     const app = apps[appId]
     if (!app) { console.warn(`[${versionId}] unknown app "${appId}"`); return null }
+    const args = { ...app.defaultArgs, ...callerArgs }
     if (app.single) {
       const existing = windowsRef.current.find(w => w.appId === appId)
       if (existing) { focus(existing.id); return existing.id }

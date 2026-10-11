@@ -41,6 +41,8 @@ export default function Shell() {
 - Pass the `apps` array from a `useMemo`/module constant (not inline) so the registry is stable.
 - `fsSeed` keys are paths (`"C:/WINDOWS/WIN.INI"`); value `string` = file, `null` = folder. Persisted under `winclone.fs.<id>`.
 - Version-only apps are plain `AppDef`s (`{ id, title, icon, component, width, height }`).
+- `AppDef.defaultArgs` are merged under the caller's args on every open — use it for per-version Explorer icons/labels instead of wrapping the component.
+- `usePref(key, initial)` is shared: every component using the same key sees the same value.
 - Every version must offer a way back to the launcher (`os.exit()`), e.g. Shut Down / Exit Windows.
 - Icons/wallpapers: draw with CSS / inline SVG (`svgIcon`) or emoji. No copyrighted Microsoft bitmaps.
 

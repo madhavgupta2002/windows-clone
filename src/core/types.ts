@@ -21,6 +21,8 @@ export interface AppDef {
   resizable?: boolean
   /** Only one window of this app at a time (re-focuses the existing one). */
   single?: boolean
+  /** Args merged under the caller's args on every open (e.g. per-version Explorer icons). */
+  defaultArgs?: Record<string, unknown>
 }
 
 export interface WinState {
