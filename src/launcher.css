@@ -1,0 +1,12 @@
+html, body { margin: 0; }
+.launcher { min-height: 100vh; padding: 48px clamp(16px, 5vw, 64px); background: #0f1115; color: #e8e8ea; font: 15px/1.5 system-ui, "Segoe UI", sans-serif; box-sizing: border-box; }
+.launcher header h1 { margin: 0 0 6px; font-size: 34px; letter-spacing: -.5px; }
+.launcher header p { margin: 0 0 32px; color: #9aa0aa; }
+.launcher-grid { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; }
+.launcher-card { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 12px; border-radius: 12px; background: #181b21; border: 1px solid #262a33; color: inherit; text-decoration: none; transition: transform .15s, border-color .15s; }
+.launcher-card:hover, .launcher-card:focus-visible { transform: translateY(-3px); border-color: #4c8dff; outline: none; }
+.launcher-preview { grid-column: 1 / -1; aspect-ratio: 16 / 10; border-radius: 6px; margin-bottom: 8px; box-shadow: inset 0 0 0 1px #ffffff14; }
+.launcher-name { font-weight: 600; }
+.launcher-year { color: #7d8590; font-variant-numeric: tabular-nums; }
+.launcher-tagline { grid-column: 1 / -1; color: #9aa0aa; font-size: 13px; }
+.launcher footer { margin-top: 40px; color: #5d636d; font-size: 13px; }
