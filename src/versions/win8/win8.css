@@ -1,0 +1,387 @@
+/* ===== Windows 8 / 8.1 — scoped under .os-win8 (8.1 adds .os-win81) ===== */
+.os-win8 {
+  --ui-font: 12px "Segoe UI", "Segoe UI Web", Tahoma, sans-serif;
+  --ui-fg: #000;
+  --ui-bg: #fff;
+  --field-bg: #fff;
+  --field-fg: #000;
+  --accent-fg: #fff;
+  --border-light: #fff;
+  --border-dark: #ababab;
+  --border-darker: #707070;
+  --radius: 0;
+  --taskbar-h: 40px;
+  --tile: 58px;
+  --gap: 6px;
+  font: var(--ui-font);
+  color: var(--ui-fg);
+  background: #000;
+}
+.os-win8 button, .os-win8 input, .os-win8 select, .os-win8 textarea { font: inherit; color: inherit; }
+.os-win8 button { cursor: default; }
+.os-win8 .w8-glyph { width: 1em; height: 1em; display: inline-block; flex: none; }
+.os-win8 .dim { opacity: .7; }
+.os-win8 .w8-link { background: none; border: 0; padding: 0; color: inherit; text-decoration: underline; cursor: pointer; }
+.os-win8 .w8-btn { border: 2px solid currentColor; background: transparent; padding: 4px 14px; font-weight: 600; }
+.os-win8 .w8-btn:hover:not(:disabled) { background: #ffffff22; }
+.os-win8 .w8-btn:disabled { opacity: .5; }
+@keyframes w8-slide-in { from { opacity: 0; transform: translateX(60px); } }
+@keyframes w8-zoom-in { from { opacity: 0; transform: scale(.92); } }
+
+/* ---------- Lock screen ---------- */
+.os-win8 .w8-lock {
+  position: absolute; inset: 0; z-index: 900; color: #fff; touch-action: none;
+  transition: transform .38s cubic-bezier(.2, .8, .2, 1);
+}
+.os-win8 .w8-lock.dragging { transition: none; }
+.os-win8 .w8-lock.leaving { transform: translateY(-100%); }
+.os-win8 .w8-lock-clock { position: absolute; left: 5vw; bottom: 9vh; text-shadow: 0 1px 6px #0006; }
+.os-win8 .w8-lock-clock .time { font-size: clamp(64px, 11vw, 128px); font-weight: 200; line-height: 1; }
+.os-win8 .w8-lock-clock .date { font-size: clamp(26px, 4vw, 44px); font-weight: 300; margin-top: 4px; }
+.os-win8 .w8-lock-clock .status { display: flex; align-items: center; gap: 10px; font-size: 22px; margin-top: 18px; }
+.os-win8 .w8-lock-clock .status span { font-size: 16px; margin-left: -6px; }
+.os-win8 .w8-lock-hint { position: absolute; right: 30px; bottom: 26px; opacity: .55; font-size: 13px; }
+
+/* ---------- Start screen ---------- */
+.os-win8 .w8-start {
+  position: absolute; inset: 0; z-index: 500; color: #fff; overflow: hidden;
+  background:
+    radial-gradient(circle at 85% 110%, #ffffff10 0 18%, transparent 18.2%),
+    radial-gradient(circle at 92% 95%, #ffffff0a 0 26%, transparent 26.2%),
+    repeating-linear-gradient(120deg, transparent 0 60px, #ffffff06 60px 62px),
+    var(--start-bg);
+  visibility: hidden; opacity: 0; transform: scale(1.04);
+  transition: opacity .25s, transform .25s, visibility 0s .25s;
+}
+.os-win8 .w8-start.visible { visibility: visible; opacity: 1; transform: none; transition: opacity .25s, transform .3s cubic-bezier(.2, .8, .2, 1); }
+.os-win8 .w8-start-page, .os-win8 .w8-apps-page { position: absolute; inset: 0; display: flex; flex-direction: column; transition: transform .45s cubic-bezier(.2, .8, .2, 1); }
+.os-win8 .w8-apps-page { transform: translateY(100%); background: var(--start-bg); }
+.os-win8 .w8-start.show-apps .w8-start-page { transform: translateY(-100%); }
+.os-win8 .w8-start.show-apps .w8-apps-page { transform: none; }
+.os-win8 .w8-start-head { flex: none; display: flex; align-items: center; justify-content: space-between; padding: 40px 40px 0 116px; height: 140px; }
+.os-win8 .w8-start-head h1 { margin: 0; font-size: 42px; font-weight: 200; letter-spacing: .5px; }
+.os-win8 .w8-start-head h1 small { font-size: 20px; margin-left: 10px; opacity: .7; }
+.os-win8 .w8-start-user { display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 300; }
+.os-win8 .w8-start-user .pic { width: 40px; height: 40px; display: grid; place-items: center; background: #ffffff30; font-size: 30px; }
+.os-win8 .w8-round { width: 32px; height: 32px; border-radius: 50%; border: 0; background: transparent; display: grid; place-items: center; font-size: 18px; color: #fff; }
+.os-win8 .w8-round:hover { background: #ffffff25; }
+.os-win8 .w8-tiles-scroll { flex: 1; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; scrollbar-color: #ffffff40 transparent; }
+.os-win8 .w8-groups { display: flex; gap: 70px; padding: 6px 80px 30px 116px; width: max-content; }
+.os-win8 .w8-group h2 { margin: 0 0 14px; font-size: 16px; font-weight: 400; opacity: .85; height: 20px; }
+.os-win8 .w8-group-grid {
+  display: grid; grid-template-rows: repeat(8, var(--tile)); grid-auto-columns: var(--tile);
+  grid-auto-flow: column dense; gap: var(--gap);
+}
+@media (max-height: 720px) { .os-win8 .w8-group-grid { grid-template-rows: repeat(6, var(--tile)); } .os-win8 .w8-start-head { height: 110px; padding-top: 26px; } }
+.os-win8 .w8-group:nth-child(1) { animation: w8-slide-in .5s .05s backwards; }
+.os-win8 .w8-group:nth-child(2) { animation: w8-slide-in .5s .12s backwards; }
+.os-win8 .w8-group:nth-child(3) { animation: w8-slide-in .5s .19s backwards; }
+
+.os-win8 .w8-tile {
+  position: relative; overflow: hidden; border: 0; padding: 0; color: #fff; outline: 2px solid transparent; outline-offset: -2px;
+  transition: transform .12s, outline-color .12s;
+}
+.os-win8 .w8-tile.small { grid-row: span 1; grid-column: span 1; }
+.os-win8 .w8-tile.medium { grid-row: span 2; grid-column: span 2; }
+.os-win8 .w8-tile.wide { grid-row: span 2; grid-column: span 4; }
+.os-win8 .w8-tile.large { grid-row: span 4; grid-column: span 4; }
+.os-win8 .w8-tile:hover { outline-color: #ffffff60; }
+.os-win8 .w8-tile:active { transform: scale(.96) perspective(400px) rotateX(4deg); }
+.os-win8 .w8-tile-icon { position: absolute; inset: 0; display: grid; place-items: center; font-size: 46px; }
+.os-win8 .w8-tile.small .w8-tile-icon { font-size: 28px; }
+.os-win8 .w8-tile.large .w8-tile-icon { font-size: 80px; }
+.os-win8 .w8-tile-label { position: absolute; left: 8px; bottom: 5px; font-size: 12px; z-index: 2; text-shadow: 0 0 3px #0005; }
+.os-win8 .w8-live { position: absolute; inset: 0; }
+.os-win8 .w8-face { position: absolute; inset: 0; transform: translateY(100%); }
+.os-win8 .w8-face.current, .os-win8 .w8-face.prev { transition: transform .7s cubic-bezier(.3, .9, .2, 1); }
+.os-win8 .w8-face.current { transform: none; }
+.os-win8 .w8-face.prev { transform: translateY(-100%); }
+.os-win8 .w8-face-logo { position: absolute; inset: 0; display: grid; place-items: center; font-size: 50px; }
+.os-win8 .w8-tile.large .w8-face-logo { font-size: 84px; }
+.os-win8 .w8-face-text { position: absolute; inset: 0; padding: 10px 12px 26px; display: flex; flex-direction: column; gap: 2px; text-align: left; font-size: 13px; overflow: hidden; }
+.os-win8 .w8-face-text b { font-size: 17px; font-weight: 400; }
+.os-win8 .w8-face-text .dim { font-size: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.os-win8 .w8-face-photo { position: absolute; inset: 0; background-size: cover; }
+.os-win8 .w8-face-photo .caption { position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 12px 26px; text-align: left; font-size: 16px; background: linear-gradient(transparent, #000a); }
+.os-win8 .w8-tile.large .w8-face-photo .caption { font-size: 22px; font-weight: 300; }
+.os-win8 .w8-face-weather { position: absolute; inset: 0; display: flex; align-items: center; gap: 16px; padding: 0 16px 14px; text-align: left; font-size: 13px; line-height: 1.35;
+  background: linear-gradient(160deg, #3f9ae0, #1e73be 60%); }
+.os-win8 .w8-face-weather .temp { font-size: 52px; font-weight: 200; }
+.os-win8 .w8-face-forecast { position: absolute; inset: 0; padding: 10px 14px 24px; text-align: left; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.os-win8 .w8-face-forecast span { opacity: .75; font-size: 11px; margin-left: 4px; }
+.os-win8 .w8-face-clock, .os-win8 .w8-face-cal { position: absolute; inset: 0; padding: 10px 12px; text-align: left; }
+.os-win8 .w8-face-clock .t { font-size: 28px; font-weight: 300; margin-top: 14px; white-space: nowrap; }
+.os-win8 .w8-face-clock .d, .os-win8 .w8-face-cal .d { font-size: 13px; opacity: .85; }
+.os-win8 .w8-face-cal .n { font-size: 56px; font-weight: 200; line-height: 1; margin-top: 6px; }
+.os-win8 .w8-face-desktop { position: absolute; inset: 0; background: var(--wallpaper); }
+.os-win8 .w8-face-desktop::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 12%; background: color-mix(in srgb, var(--accent) 70%, #0008); }
+
+.os-win8 .w8-apps-arrow {
+  position: absolute; left: 116px; bottom: 26px; width: 38px; height: 38px; border: 0; border-radius: 50%;
+  background: transparent; color: #fff; font-size: 36px; display: grid; place-items: center; opacity: 0; transition: opacity .3s;
+}
+.os-win8 .w8-apps-arrow.show { opacity: .85; }
+.os-win8 .w8-apps-arrow:hover { opacity: 1; background: #ffffff20; }
+.os-win8 .w8-apps-arrow.up { bottom: auto; top: 54px; left: auto; right: 50px; }
+.os-win8 .w8-apps-list {
+  flex: 1; display: grid; grid-auto-flow: column; grid-template-rows: repeat(auto-fill, 50px); grid-auto-columns: 240px;
+  gap: 4px 24px; padding: 10px 116px 40px; overflow-x: auto; align-content: start;
+}
+.os-win8 .w8-app-entry { display: flex; align-items: center; gap: 10px; border: 0; background: transparent; color: #fff; padding: 4px; text-align: left; font-size: 14px; width: 100%; }
+.os-win8 .w8-app-entry:hover { background: #ffffff20; }
+.os-win8 .w8-app-entry .ico { width: 40px; height: 40px; display: grid; place-items: center; font-size: 22px; flex: none; }
+
+/* ---------- Hot corners ---------- */
+.os-win8 .w8-corner { position: absolute; z-index: 800; width: 8px; height: 8px; }
+.os-win8 .w8-corner-bl { left: 0; bottom: 0; }
+.os-win8 .w8-corner-tl { left: 0; top: 0; }
+.os-win8 .w8-corner:hover { width: 120px; height: 90px; }
+.os-win8 .w8-corner-thumb {
+  position: absolute; width: 96px; height: 66px; display: grid; place-items: center; color: #fff; font-size: 30px;
+  background: var(--start-bg); border: 2px solid #ffffff60; box-shadow: 0 4px 16px #0008; animation: w8-zoom-in .15s;
+}
+.os-win8 .w8-corner-thumb span { font-size: 12px; padding: 4px; text-align: center; }
+.os-win8 .w8-corner-bl .w8-corner-thumb { left: 6px; bottom: 6px; }
+.os-win8 .w8-corner-tl .w8-corner-thumb { left: 6px; top: 6px; background: #000c; }
+.os-win81 .w8-corner-bl .w8-corner-thumb { display: none; }
+
+/* ---------- Charms ---------- */
+.os-win8 .w8-hot { position: absolute; right: 0; width: 6px; height: 6px; z-index: 810; }
+.os-win8 .w8-hot-tr { top: 0; }
+.os-win8 .w8-hot-br { bottom: 0; }
+.os-win8 .w8-charms {
+  position: absolute; right: 0; top: 0; bottom: 0; width: 86px; z-index: 805; display: flex; flex-direction: column; justify-content: center; gap: 8px;
+  transform: translateX(100%); transition: transform .2s, background .2s;
+}
+.os-win8 .w8-charms.peek { transform: none; background: transparent; }
+.os-win8 .w8-charms.active { transform: none; background: #111; }
+.os-win8 .w8-charm { height: 76px; border: 0; background: transparent; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-size: 13px; }
+.os-win8 .w8-charm .w8-glyph { font-size: 28px; }
+.os-win8 .w8-charms.peek .w8-charm span { visibility: hidden; }
+.os-win8 .w8-charms.peek .w8-charm .w8-glyph { filter: drop-shadow(0 0 3px #000); }
+.os-win8 .w8-charm:hover { background: #ffffff1a; }
+.os-win8 .w8-charm.start .w8-glyph { font-size: 34px; }
+.os-win8 .w8-charms.active .w8-charm.start { background: color-mix(in srgb, var(--accent) 40%, transparent); }
+.os-win8 .w8-charm-clock {
+  position: absolute; left: 50px; bottom: 60px; z-index: 805; display: flex; align-items: flex-end; gap: 18px; color: #fff;
+  background: #111e; padding: 18px 26px; animation: w8-slide-in .2s;
+}
+.os-win8 .w8-charm-clock .status { display: flex; flex-direction: column; gap: 10px; font-size: 20px; padding-bottom: 8px; }
+.os-win8 .w8-charm-clock .time { font-size: 82px; font-weight: 200; line-height: .95; }
+.os-win8 .w8-charm-clock .date { font-size: 24px; font-weight: 300; line-height: 1.2; padding-bottom: 6px; }
+.os-win8 .w8-pane-shield { position: absolute; inset: 0; z-index: 820; }
+.os-win8 .w8-pane {
+  position: absolute; right: 0; top: 0; bottom: 0; width: 346px; z-index: 821; padding: 34px 32px; display: flex; flex-direction: column;
+  color: #fff; background: color-mix(in srgb, var(--accent) 85%, #000); box-shadow: -6px 0 20px #0006; animation: w8-slide-in .25s cubic-bezier(.2, .8, .2, 1);
+}
+.os-win8 .w8-pane-search, .os-win8 .w8-pane-share, .os-win8 .w8-pane-devices { background: #1d1d1d; }
+.os-win8 .w8-pane h2 { margin: 0 0 18px; font-size: 28px; font-weight: 300; }
+.os-win8 .w8-pane-context { font-size: 15px; opacity: .8; margin: -8px 0 18px; }
+.os-win8 .w8-pane-links { display: flex; flex-direction: column; }
+.os-win8 .w8-pane-links button { border: 0; background: transparent; color: #fff; text-align: left; font-size: 15px; padding: 9px 0; }
+.os-win8 .w8-pane-links button:hover { background: #ffffff15; }
+.os-win8 .w8-pane-bottom { margin-top: auto; }
+.os-win8 .w8-quick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.os-win8 .w8-quick-btn { border: 0; background: transparent; color: #fff; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 0; font-size: 11px; }
+.os-win8 .w8-quick-btn .w8-glyph { font-size: 28px; }
+.os-win8 .w8-quick-btn:hover { background: #ffffff20; }
+.os-win8 .w8-power-menu { display: flex; flex-direction: column; margin-bottom: 10px; background: #fff; color: #000; padding: 6px 0; box-shadow: 0 3px 12px #0006; }
+.os-win8 .w8-power-menu button { border: 0; background: transparent; text-align: left; padding: 8px 18px; font-size: 14px; }
+.os-win8 .w8-power-menu button:hover { background: #ddd; }
+.os-win8 .w8-power-menu input { margin: 8px 16px; accent-color: var(--accent); }
+.os-win8 .w8-pcsettings-link { margin-top: 14px; border: 0; background: transparent; color: #fff; font-size: 14px; padding: 6px 0; text-align: left; }
+.os-win8 .w8-pcsettings-link:hover { text-decoration: underline; }
+.os-win8 .w8-search-box { display: flex; align-items: center; background: #fff; color: #000; padding-right: 8px; margin-bottom: 16px; }
+.os-win8 .w8-search-box input { flex: 1; border: 0; outline: none; padding: 8px 10px; font-size: 15px; background: transparent; }
+.os-win8 .w8-search-box .w8-glyph { font-size: 18px; color: #555; }
+.os-win8 .w8-search-results { overflow: auto; }
+.os-win8 .w8-pane-section p { margin: 10px 0; }
+.os-win8 .w8-swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.os-win8 .w8-swatch { width: 44px; height: 44px; border: 2px solid transparent; }
+.os-win8 .w8-swatch.active { border-color: #fff; box-shadow: 0 0 0 2px #0006; }
+
+/* ---------- Modern apps ---------- */
+.os-win8 .w8-modern { position: absolute; inset: 0; z-index: 400; display: flex; flex-direction: column; background: #fff; color: #222; animation: w8-zoom-in .3s cubic-bezier(.2, .8, .2, 1); }
+.os-win8 .w8-modern-titlebar {
+  position: absolute; left: 0; right: 0; top: 0; height: 32px; z-index: 5; display: flex; align-items: center; gap: 8px; padding-left: 10px;
+  background: #f0f0f0; color: #333; border-bottom: 1px solid #ccc; transform: translateY(-100%); transition: transform .2s .1s;
+}
+.os-win8 .w8-modern-titlebar::after { content: ""; position: absolute; left: 0; right: 0; bottom: -10px; height: 10px; }
+.os-win8 .w8-modern-hot { position: absolute; left: 0; right: 0; top: 0; height: 8px; z-index: 6; }
+.os-win8 .w8-modern-hot:hover + .w8-modern-titlebar, .os-win8 .w8-modern-titlebar:hover { transform: none; transition-delay: 0s; }
+.os-win8 .w8-modern-titleicon { width: 22px; height: 22px; display: grid; place-items: center; background: var(--app-color); color: #fff; font-size: 14px; }
+.os-win8 .w8-modern-close { margin-left: auto; width: 46px; height: 100%; border: 0; background: transparent; font-size: 14px; }
+.os-win8 .w8-modern-close:hover { background: #e81123; color: #fff; }
+.os-win8 .w8-modern-head { flex: none; display: flex; align-items: center; gap: 20px; padding: 36px 40px 18px 40px; background: var(--app-color); color: #fff; }
+.os-win8 .w8-modern-head h1 { margin: 0; font-size: 40px; font-weight: 200; }
+.os-win8 .w8-modern-back { border: 0; background: transparent; color: #fff; font-size: 38px; display: grid; place-items: center; padding: 0; border-radius: 50%; }
+.os-win8 .w8-modern-back:hover { background: #ffffff22; }
+.os-win8 .w8-modern-body { flex: 1; min-height: 0; overflow: auto; padding: 28px 40px 40px 98px; user-select: text; }
+.os-win8 .w8-modern-weather .w8-modern-body { background: linear-gradient(170deg, #3f9ae0, #1e73be 60%, #164e85); color: #fff; }
+.os-win8 .w8-weather-now { display: flex; align-items: center; gap: 30px; font-size: 18px; font-weight: 300; }
+.os-win8 .w8-weather-now .big { font-size: 110px; font-weight: 100; line-height: 1; }
+.os-win8 .w8-weather-now .city { font-size: 28px; }
+.os-win8 .w8-weather-now .icon { font-size: 80px; }
+.os-win8 .w8-forecast { display: flex; gap: 6px; margin-top: 40px; }
+.os-win8 .w8-forecast-day { width: 130px; padding: 14px; background: #ffffff1a; display: flex; flex-direction: column; gap: 6px; font-size: 16px; }
+.os-win8 .w8-forecast-day .icon { font-size: 36px; }
+.os-win8 .w8-forecast-day .hi { font-size: 26px; font-weight: 300; }
+.os-win8 .w8-forecast-day .small { font-size: 12px; }
+.os-win8 .w8-news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); grid-auto-rows: 170px; gap: 10px; }
+.os-win8 .w8-news-card { position: relative; border: 0; color: #fff; text-align: left; display: flex; flex-direction: column; justify-content: flex-end; padding: 14px; gap: 4px; }
+.os-win8 .w8-news-card::before { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 30%, #000b); }
+.os-win8 .w8-news-card > * { position: relative; }
+.os-win8 .w8-news-card.hero { grid-column: span 2; grid-row: span 2; }
+.os-win8 .w8-news-card.hero .title { font-size: 28px; font-weight: 300; }
+.os-win8 .w8-news-card .title { font-size: 17px; }
+.os-win8 .w8-news-card .cat, .os-win8 .w8-article .cat { text-transform: uppercase; font-size: 11px; letter-spacing: 1px; opacity: .85; }
+.os-win8 .w8-article { max-width: 640px; font-size: 16px; line-height: 1.6; }
+.os-win8 .w8-article h2 { font-size: 32px; font-weight: 300; line-height: 1.2; margin: 8px 0 16px; }
+.os-win8 .w8-modern-photos .w8-modern-body, .os-win8 .w8-modern-music .w8-modern-body { background: #111; color: #fff; }
+.os-win8 .w8-photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); grid-auto-rows: 160px; gap: 8px; }
+.os-win8 .w8-photo { border: 0; position: relative; color: #fff; text-align: left; padding: 10px; display: flex; align-items: flex-end; }
+.os-win8 .w8-photo span { text-shadow: 0 1px 3px #000; }
+.os-win8 .w8-photo-view { position: absolute; inset: 0; z-index: 3; display: flex; align-items: flex-end; padding: 24px; }
+.os-win8 .w8-photo-caption { background: #000a; color: #fff; padding: 8px 14px; }
+.os-win8 .w8-mail { display: flex; gap: 30px; height: 100%; }
+.os-win8 .w8-mail-list { width: 300px; flex: none; display: flex; flex-direction: column; }
+.os-win8 .w8-mail-folder { font-size: 22px; font-weight: 300; margin-bottom: 12px; }
+.os-win8 .w8-mail-item { display: flex; flex-direction: column; gap: 2px; text-align: left; border: 0; background: transparent; padding: 10px 12px; font-size: 13px; }
+.os-win8 .w8-mail-item b { font-weight: 600; font-size: 15px; }
+.os-win8 .w8-mail-item:hover { background: #e5e5e5; }
+.os-win8 .w8-mail-item.selected { background: #cfe3f6; }
+.os-win8 .w8-mail-read h2 { font-size: 28px; font-weight: 300; margin: 0 0 6px; }
+.os-win8 .w8-mail-read p { font-size: 15px; line-height: 1.6; max-width: 560px; }
+.os-win8 .w8-calendar h2 { font-size: 30px; font-weight: 300; margin: 0 0 14px; }
+.os-win8 .w8-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.os-win8 .w8-cal-grid .dn { padding: 6px; font-size: 13px; color: #666; }
+.os-win8 .w8-cal-grid .cell { min-height: 74px; padding: 6px 8px; background: #f2f2f2; font-size: 18px; font-weight: 300; }
+.os-win8 .w8-cal-grid .cell.today { background: var(--app-color); color: #fff; }
+.os-win8 .w8-cal-grid .ev { font-size: 11px; margin-top: 2px; }
+.os-win8 .w8-store h2, .os-win8 .w8-pcsettings h2 { font-size: 26px; font-weight: 300; margin: 0 0 14px; }
+.os-win8 .w8-store-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.os-win8 .w8-store-app { display: flex; gap: 12px; }
+.os-win8 .w8-store-app .tile { width: 90px; height: 90px; display: grid; place-items: center; font-size: 40px; font-weight: 200; color: #fff; flex: none; }
+.os-win8 .w8-store-app .stars { color: #00a300; margin: 3px 0 6px; }
+.os-win8 .w8-store-app .w8-btn { color: #00a300; }
+.os-win8 .w8-music { display: flex; flex-direction: column; gap: 2px; max-width: 640px; }
+.os-win8 .w8-track { display: grid; grid-template-columns: 30px 1fr 160px 50px; align-items: center; gap: 10px; text-align: left; border: 0; background: transparent; color: #fff; padding: 10px; font-size: 15px; }
+.os-win8 .w8-track:hover { background: #ffffff15; }
+.os-win8 .w8-track.playing { background: var(--app-color); }
+.os-win8 .w8-nowplaying { margin-top: 24px; display: flex; align-items: center; gap: 14px; font-size: 16px; }
+.os-win8 .eq { display: inline-flex; gap: 3px; align-items: flex-end; height: 18px; }
+.os-win8 .eq i { width: 4px; background: var(--app-color); animation: w8-eq .8s ease-in-out infinite alternate; }
+.os-win8 .eq i:nth-child(2) { animation-delay: .2s; } .os-win8 .eq i:nth-child(3) { animation-delay: .4s; } .os-win8 .eq i:nth-child(4) { animation-delay: .1s; }
+@keyframes w8-eq { from { height: 3px; } to { height: 18px; } }
+.os-win8 .w8-pcsettings p { margin: 0 0 14px; font-size: 14px; }
+.os-win8 .w8-pcsettings .w8-swatches { margin-bottom: 30px; }
+
+/* ---------- Desktop ---------- */
+.os-win8 .w8-desktop-layer { position: absolute; inset: 0; visibility: hidden; }
+.os-win8 .w8-desktop-layer.visible { visibility: visible; animation: w8-zoom-in .25s; }
+.os-win8 .w8-desktop { position: absolute; inset: 0 0 var(--taskbar-h); background-size: cover; }
+.os-win8 .desktop-icon { width: 76px; padding: 4px 2px; color: #fff; border: 1px solid transparent; }
+.os-win8 .desktop-icon:hover { background: #ffffff25; border-color: #ffffff40; }
+.os-win8 .desktop-icon.selected { background: #ffffff45; border-color: #ffffff70; }
+.os-win8 .desktop-icon-img { width: 44px; height: 44px; }
+.os-win8 .desktop-icon-label { margin-top: 4px; text-shadow: 0 1px 2px #000, 0 0 3px #000; }
+
+.os-win8 .wm-window { box-shadow: 0 0 0 1px #0004, 0 6px 24px #0006; }
+.os-win8 .wm-window:not(.wm-active) { box-shadow: 0 0 0 1px #0003, 0 3px 12px #0003; }
+.os-win8 .w8-frame { height: 100%; display: flex; flex-direction: column; background: var(--accent); padding: 0 7px 7px; }
+.os-win8 .w8-frame:not(.active) { background: #ebebeb; }
+.os-win8 .w8-frame.maximized { padding: 0; }
+.os-win8 .w8-titlebar { flex: none; height: 30px; display: flex; align-items: center; position: relative; color: #000; }
+.os-win8 .w8-frame.active .w8-titlebar { color: #000; }
+.os-win8 .w8-title-icon { width: 16px; height: 16px; margin-right: 6px; }
+.os-win8 .w8-title { position: absolute; left: 0; right: 0; text-align: center; font-size: 15px; pointer-events: none; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding: 0 150px; }
+.os-win8 .w8-frame:not(.active) .w8-title { color: #888; }
+.os-win8 .w8-controls { margin-left: auto; display: flex; align-self: flex-start; position: relative; }
+.os-win8 .w8-controls button { width: 26px; height: 20px; border: 0; background: transparent; display: grid; place-items: center; }
+.os-win8 .w8-controls svg { width: 10px; height: 10px; fill: none; stroke: #000; stroke-width: 1.4; }
+.os-win8 .w8-controls button:hover { background: #ffffff40; }
+.os-win8 .w8-controls .close { width: 46px; background: #c75050; }
+.os-win8 .w8-controls .close svg { stroke: #fff; stroke-width: 1.6; }
+.os-win8 .w8-controls .close:hover { background: #e04343; }
+.os-win8 .w8-frame:not(.active) .w8-controls .close { background: transparent; }
+.os-win8 .w8-frame:not(.active) .w8-controls .close svg { stroke: #000; }
+.os-win8 .w8-content { flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--ui-bg); border: 1px solid #0003; overflow: hidden; }
+.os-win8 .w8-content > * { flex: 1; min-height: 0; }
+
+.os-win8 .w8-taskbar {
+  position: absolute; left: 0; right: 0; bottom: 0; height: var(--taskbar-h); display: flex; align-items: stretch; z-index: 300;
+  background: color-mix(in srgb, var(--accent) 55%, #000c); backdrop-filter: blur(8px); color: #fff;
+}
+.os-win8 .w8-startbtn { width: 48px; border: 0; background: transparent; color: #fff; display: grid; place-items: center; font-size: 22px; }
+.os-win8 .w8-startbtn:hover { color: #6cf; background: #ffffff15; }
+.os-win8 .w8-tasks { flex: 1; display: flex; padding-left: 4px; gap: 2px; }
+.os-win8 .w8-task { position: relative; width: 58px; border: 0; background: transparent; display: grid; place-items: center; }
+.os-win8 .w8-task:hover { background: #ffffff25; }
+.os-win8 .w8-task.running { background: #ffffff18; box-shadow: inset 0 0 0 1px #ffffff30; }
+.os-win8 .w8-task.active { background: #ffffff38; box-shadow: inset 0 0 0 1px #ffffff60; }
+.os-win8 .w8-task .count { position: absolute; right: 4px; bottom: 2px; font-size: 10px; }
+.os-win8 .w8-tray { display: flex; align-items: center; gap: 2px; }
+.os-win8 .w8-tray-ico { padding: 0 5px; font-size: 15px; display: grid; place-items: center; height: 100%; }
+.os-win8 .w8-clock { border: 0; background: transparent; color: #fff; padding: 0 10px; height: 100%; font-size: 12px; line-height: 16px; text-align: center; }
+.os-win8 .w8-clock:hover, .os-win8 .w8-tray-ico:hover { background: #ffffff20; }
+.os-win8 .w8-show-desktop { width: 10px; height: 100%; border: 0; border-left: 1px solid #ffffff40; background: transparent; }
+.os-win8 .w8-show-desktop:hover { background: #ffffff30; }
+.os-win8 .w8-calflyout {
+  position: absolute; right: 6px; bottom: calc(var(--taskbar-h) + 4px); width: 300px; padding: 16px; background: #1f1f1fee; color: #fff;
+  border: 1px solid #555; box-shadow: 0 4px 18px #0008; animation: w8-zoom-in .15s;
+}
+.os-win8 .w8-calflyout .big { font-size: 34px; font-weight: 200; }
+.os-win8 .w8-calflyout .w8-link { text-decoration: none; color: #8cf; display: block; margin-bottom: 10px; }
+.os-win8 .w8-calflyout .grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; gap: 2px; }
+.os-win8 .w8-calflyout .grid b { font-weight: 400; font-size: 11px; opacity: .7; }
+.os-win8 .w8-calflyout .grid span { padding: 5px 0; }
+.os-win8 .w8-calflyout .grid .today { background: var(--accent); }
+
+/* ---------- Power / sleep ---------- */
+.os-win8 .w8-power-screen { position: absolute; inset: 0; z-index: 950; background: var(--start-bg); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; font-size: 22px; font-weight: 300; }
+.os-win8 .w8-dots { position: relative; width: 50px; height: 50px; }
+.os-win8 .w8-dots i { position: absolute; inset: 0; animation: w8-orbit 2s cubic-bezier(.5, .1, .5, .9) infinite; }
+.os-win8 .w8-dots i::before { content: ""; position: absolute; left: 50%; top: 0; width: 5px; height: 5px; border-radius: 50%; background: #fff; }
+.os-win8 .w8-dots i:nth-child(2) { animation-delay: .12s; } .os-win8 .w8-dots i:nth-child(3) { animation-delay: .24s; }
+.os-win8 .w8-dots i:nth-child(4) { animation-delay: .36s; } .os-win8 .w8-dots i:nth-child(5) { animation-delay: .48s; }
+@keyframes w8-orbit { to { transform: rotate(360deg); } }
+.os-win8 .w8-sleep { position: absolute; inset: 0; z-index: 960; background: #000; }
+.os-win8 .w8-dim { position: absolute; inset: 0; z-index: 990; background: #000; pointer-events: none; }
+
+/* ===== Shared app restyling (core apps contract): flat Windows 8 controls ===== */
+.os-win8 .app { background: var(--ui-bg); color: var(--ui-fg); font: var(--ui-font); }
+.os-win8 .btn { border: 1px solid #acacac; background: linear-gradient(#f0f0f0, #e5e5e5); padding: 3px 14px; min-width: 72px; min-height: 23px; color: #000; }
+.os-win8 .btn:hover { border-color: #7eb4ea; background: linear-gradient(#ecf4fc, #dcecfc); }
+.os-win8 .btn:active { border-color: #569de5; background: linear-gradient(#daecfc, #c4e0fc); }
+.os-win8 .field, .os-win8 .app input[type="text"], .os-win8 .app input[type="search"], .os-win8 .app select { border: 1px solid #abadb3; background: #fff; color: #000; padding: 2px 4px; }
+.os-win8 .field:focus, .os-win8 .app input:focus { border-color: #569de5; outline: none; }
+.os-win8 .toolbar, .os-win8 .explorer-toolbar, .os-win8 .browser-toolbar { display: flex; align-items: center; gap: 4px; padding: 4px 6px; background: #f5f6f7; border-bottom: 1px solid #dadbdc; }
+.os-win8 .explorer-toolbar button, .os-win8 .toolbar .btn { min-width: 0; border: 1px solid transparent; background: transparent; padding: 2px 8px; }
+.os-win8 .explorer-toolbar button:hover:not(:disabled), .os-win8 .toolbar .btn:hover { border-color: #cce8ff; background: #e5f3ff; }
+.os-win8 .explorer-address { flex: 1; border: 1px solid #d9d9d9; background: #fff; padding: 3px 6px; }
+.os-win8 .browser-address { flex: none; background: #f5f6f7; border-bottom: 1px solid #dadbdc; }
+.os-win8 .browser-address .field { flex: 1; border-color: #d9d9d9; padding: 3px 6px; }
+.os-win8 .statusbar { min-height: 22px; display: flex; align-items: center; gap: 12px; padding: 2px 8px; background: #fff; border-top: 1px solid #f0f0f0; color: #333; }
+.os-win8 .sunken { border: 1px solid #d9d9d9; background: #fff; }
+.os-win8 .listview-item:hover, .os-win8 .explorer-item:hover { background: #e5f3ff; }
+.os-win8 .listview-item.selected, .os-win8 .explorer-item.selected { background: #cce8ff; outline: 1px solid #99d1ff; color: #000; }
+.os-win8 .explorer-tree { background: #fff; border-right: 1px solid #f0f0f0; }
+.os-win8 .menubar { background: #fff; border-bottom: 1px solid #f0f0f0; }
+.os-win8 .menubar-item:hover, .os-win8 .menubar-item.open { background: #e5f3ff; outline: 1px solid #cce8ff; }
+.os-win8 .menu-dropdown { min-width: 180px; padding: 2px; background: #f0f0f0; border: 1px solid #979797; box-shadow: 2px 2px 4px #0003; color: #000; }
+.os-win8 .menu-item { padding: 3px 20px 3px 0; }
+.os-win8 .menu-item:not(.disabled):hover { background: #91c9f7; }
+.os-win8 .menu-separator { background: #d7d7d7; margin: 3px 2px 3px 26px; }
+.os-win8 .app-notepad textarea { border: 0; outline: none; resize: none; font: 14px/1.4 Consolas, "Lucida Console", monospace; background: #fff; color: #000; }
+.os-win8 .app-calculator { background: #f0f0f0; padding: 8px; gap: 6px; }
+.os-win8 .calc-display { background: #fff; border: 1px solid #abadb3; text-align: right; padding: 6px 8px; font: 28px/1.2 "Segoe UI", sans-serif; color: #000; }
+.os-win8 .calc-key { border: 1px solid #acacac; background: linear-gradient(#f0f0f0, #e5e5e5); color: #000; font-size: 14px; }
+.os-win8 .calc-key:hover { border-color: #7eb4ea; background: #dcecfc; }
+.os-win8 .calc-key.eq { background: #cde3f9; }
+.os-win8 .browser-page { background: #fff; color: #222; }
+.os-win8 .msgbox-text { color: #1e3287; font-size: 13px; }
+.os-win8 .msgbox-buttons { background: #f0f0f0; border-top: 1px solid #dfdfdf; }
+
+@media (prefers-reduced-motion: reduce) {
+  .os-win8 *, .os-win8 *::before, .os-win8 *::after { animation: none !important; transition: none !important; }
+}
