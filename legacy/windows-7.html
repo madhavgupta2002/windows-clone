@@ -1,0 +1,2637 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Windows 7 — Web Desktop</title>
+<style>
+  :root {
+    --taskbar-height: 42px;
+    --accent: #2379b2;
+    --glass: rgba(151, 198, 227, .72);
+    --wall-top: #062b66;
+    --wall-bottom: #0873ba;
+    --wall-glow: #57d8f4;
+    --icon-width: 86px;
+    --icon-height: 88px;
+    --icon-size: 44px;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    font-size: 12px;
+    color: #182433;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+  button, input, textarea, select { font: inherit; }
+  button { color: inherit; cursor: pointer; }
+  button:disabled { cursor: default; opacity: .45; }
+  button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+    outline: 2px solid #1b87d4;
+    outline-offset: -2px;
+  }
+  button { -webkit-tap-highlight-color: transparent; }
+  [hidden] { display: none !important; }
+  .icon { width: 24px; height: 24px; flex-shrink: 0; display: inline-block; }
+  .symbol-library { position: absolute; width: 0; height: 0; overflow: hidden; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0,0,0,0); white-space: nowrap;
+  }
+
+  /* Self-contained Windows 7-inspired wallpaper */
+  #wallpaper { position: fixed; inset: 0; background: var(--wall-top); }
+  #wallpaper > svg { width: 100%; height: 100%; display: block; }
+  body[data-theme="graphite"] {
+    --wall-top: #151e30; --wall-bottom: #374a63; --wall-glow: #b8d7e8;
+    --glass: rgba(135, 159, 184, .78);
+  }
+  body[data-theme="sunset"] {
+    --wall-top: #351c55; --wall-bottom: #a64c69; --wall-glow: #ffc485;
+    --glass: rgba(200, 165, 190, .78);
+  }
+  body[data-theme="nature"] {
+    --wall-top: #073e45; --wall-bottom: #21816c; --wall-glow: #b8eb7c;
+    --glass: rgba(146, 199, 180, .78);
+  }
+
+  #desktop {
+    position: absolute; inset: 0 0 var(--taskbar-height);
+    overflow: hidden; user-select: none; touch-action: none;
+  }
+  .desktop-icon {
+    position: absolute; width: var(--icon-width); height: var(--icon-height);
+    background: transparent; border: 1px solid transparent; border-radius: 3px;
+    padding: 5px 3px; display: flex; flex-direction: column; align-items: center;
+    justify-content: flex-start; gap: 5px; color: white; cursor: default;
+  }
+  .desktop-icon > .icon {
+    width: var(--icon-size); height: var(--icon-size);
+    filter: drop-shadow(1px 2px 2px #0006); pointer-events: none;
+  }
+  .desktop-icon .label {
+    max-width: 100%; text-align: center; line-height: 15px;
+    overflow-wrap: anywhere; text-shadow: 1px 1px 3px #000, 0 1px 2px #000;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden; pointer-events: none;
+  }
+  .desktop-icon:hover {
+    border-color: #c6e7ff80;
+    background: linear-gradient(#d2efff30, #96caff25);
+  }
+  .desktop-icon.selected {
+    border-color: #d5eeffc9;
+    background: linear-gradient(#b3defc70, #72b7f05e);
+    box-shadow: inset 0 0 0 1px #e6f6ff30;
+  }
+  #selection-box {
+    position: absolute; border: 1px solid #80c8ff;
+    background: #3399ff40; pointer-events: none; z-index: 2;
+  }
+
+  /* Aero windows */
+  #windows { position: absolute; inset: 0 0 var(--taskbar-height); pointer-events: none; }
+  .window {
+    position: absolute; display: flex; flex-direction: column; pointer-events: auto;
+    padding: 0 6px 6px; border: 1px solid #465969; border-radius: 7px;
+    background: linear-gradient(115deg, #ffffff70 0%, #ffffff12 22%, #ffffff4a 48%, #ffffff10 52%),
+                var(--glass);
+    box-shadow: 0 5px 20px #0007, inset 0 0 0 1px #f0faffb8;
+    backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    overflow: hidden;
+  }
+  .window:not(.focused) {
+    background-color: rgba(191, 205, 215, .8);
+    box-shadow: 0 4px 14px #0005, inset 0 0 0 1px #ffffffa0;
+  }
+  .window.maximized { border-radius: 0; }
+  .titlebar {
+    height: 31px; min-height: 31px; display: flex; align-items: center; gap: 6px;
+    user-select: none; touch-action: none; cursor: default;
+  }
+  .titlebar .icon { width: 17px; height: 17px; }
+  .window-title {
+    flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    color: #122536; text-shadow: 0 0 6px white, 0 0 4px white, 0 0 2px white;
+  }
+  .window-controls {
+    align-self: flex-start; display: flex; border: 1px solid #546b81;
+    border-top: 0; border-radius: 0 0 4px 4px; overflow: hidden;
+    box-shadow: 0 1px 0 #ffffffb0;
+  }
+  .window-controls button {
+    width: 28px; height: 20px; border: 0; border-right: 1px solid #647c91;
+    padding: 0; color: #182f45; font-size: 14px; font-weight: bold;
+    background: linear-gradient(#ffffff9c 0%, #e0edfa40 48%, #7497b549 49%, #bfd9ec6b);
+    text-shadow: 0 1px #fff;
+  }
+  .window-controls button:hover { background: linear-gradient(#b9eeff, #278ed3); }
+  .window-controls .close {
+    width: 45px; border-right: 0; color: white;
+    background: linear-gradient(#eeb4a6, #c86a54 48%, #ae391f 49%, #d1856d);
+    text-shadow: 0 1px #6f2616;
+  }
+  .window-controls .close:hover {
+    background: linear-gradient(#ffc4a5, #f05730 50%, #d62305 51%, #ee9b69);
+    box-shadow: 0 0 12px #ff6525;
+  }
+  .window-content {
+    flex: 1; min-height: 0; display: flex; flex-direction: column;
+    background: #fff; border: 1px solid #6b7d8c;
+    box-shadow: 0 0 0 1px #ffffff8f; overflow: hidden;
+  }
+  .resize-handle { position: absolute; z-index: 4; touch-action: none; }
+  .resize-n { top: 0; left: 8px; right: 8px; height: 5px; cursor: n-resize; }
+  .resize-s { bottom: 0; left: 8px; right: 8px; height: 5px; cursor: s-resize; }
+  .resize-e { top: 8px; bottom: 8px; right: 0; width: 5px; cursor: e-resize; }
+  .resize-w { top: 8px; bottom: 8px; left: 0; width: 5px; cursor: w-resize; }
+  .resize-ne { top: 0; right: 0; width: 9px; height: 9px; cursor: ne-resize; }
+  .resize-nw { top: 0; left: 0; width: 9px; height: 9px; cursor: nw-resize; }
+  .resize-se { bottom: 0; right: 0; width: 12px; height: 12px; cursor: se-resize; }
+  .resize-sw { bottom: 0; left: 0; width: 9px; height: 9px; cursor: sw-resize; }
+  .maximized .resize-handle { display: none; }
+
+  /* Taskbar and Start */
+  #taskbar {
+    position: absolute; bottom: 0; left: 0; right: 0; height: var(--taskbar-height);
+    z-index: 20000; display: flex; align-items: center; gap: 8px; padding: 0 0 0 7px;
+    border-top: 1px solid #d5f1ffb0;
+    background: linear-gradient(#8cc2e366 0%, #154b7a80 12%, #0b315998 55%, #164b758c);
+    box-shadow: 0 -1px 4px #0005, inset 0 1px #ffffff30;
+    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    user-select: none;
+  }
+  #start-button {
+    width: 39px; height: 39px; flex-shrink: 0; padding: 5px; border-radius: 50%;
+    border: 1px solid #779dbd;
+    background: radial-gradient(ellipse at 50% 20%, #e2f9ffb8, #3b7aac 38%, #123568 64%, #71b1d9);
+    box-shadow: 0 0 3px #031a34, inset 0 1px 3px white;
+  }
+  #start-button .icon { width: 28px; height: 28px; filter: drop-shadow(0 1px 2px #001); }
+  #start-button:hover, #start-button.open { box-shadow: 0 0 12px #6de5ff, inset 0 1px 4px white; }
+  #task-buttons {
+    flex: 1; min-width: 0; height: 100%; display: flex; align-items: center;
+    gap: 4px; overflow-x: auto; scrollbar-width: none;
+  }
+  #task-buttons::-webkit-scrollbar { display: none; }
+  .task-button {
+    flex: 0 1 155px; min-width: 49px; height: 35px; border: 1px solid #062e5296;
+    border-radius: 4px; background: linear-gradient(#ffffff36, #8ebbd321);
+    box-shadow: inset 0 0 0 1px #e8f7ff55; padding: 3px 9px;
+    display: flex; align-items: center; gap: 8px; color: white;
+    text-shadow: 0 1px 2px #000;
+  }
+  .task-button .icon { width: 26px; height: 26px; }
+  .task-button span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .task-button:hover { background: linear-gradient(#d7f3ff8a, #78b8e059); }
+  .task-button.active {
+    background: linear-gradient(#d6efff99, #8dbede66 49%, #6799c25c 50%, #d1edff7a);
+    box-shadow: inset 0 0 0 1px #ffffffa0, 0 0 6px #a8e8ff4d;
+  }
+  #tray { display: flex; height: 100%; align-items: center; gap: 10px; color: white; }
+  .tray-icons { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+  .tray-icons .icon { width: 17px; height: 17px; }
+  #clock {
+    background: transparent; border: 0; color: white; text-align: center;
+    min-width: 82px; line-height: 16px; font-size: 11px; padding: 2px 5px;
+    text-shadow: 0 1px 2px #123;
+  }
+  #clock:hover { background: #ffffff24; }
+  #show-desktop {
+    width: 13px; height: 100%; border: 1px solid #c2e3ff80;
+    border-bottom: 0; border-top: 0;
+    background: linear-gradient(110deg, #ffffff52, #ffffff12);
+  }
+  #show-desktop:hover { background: #ffffff70; }
+
+  #start-menu {
+    position: absolute; bottom: calc(var(--taskbar-height) - 1px); left: 6px;
+    width: 408px; max-width: calc(100vw - 12px); height: 468px;
+    max-height: calc(100dvh - 48px); z-index: 21000;
+    padding: 7px; display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(130px, 1fr);
+    gap: 7px; border: 1px solid #203b50; border-radius: 7px 7px 0 0;
+    background: linear-gradient(110deg, #a5cde38f, #295779d9 45%, #173d60ed);
+    box-shadow: 0 0 0 1px #e0f5ff80 inset, 2px -3px 20px #0006;
+    backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+  }
+  .start-left {
+    min-height: 0; background: #fff; border: 1px solid #546a7d; border-radius: 4px;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  #start-programs { padding: 5px; flex: 1; overflow-y: auto; }
+  .program-button {
+    display: flex; width: 100%; gap: 9px; align-items: center;
+    border: 1px solid transparent; border-radius: 3px; background: transparent;
+    padding: 7px 5px; text-align: left; min-height: 46px;
+  }
+  .program-button .icon { width: 32px; height: 32px; }
+  .program-button:hover {
+    background: linear-gradient(#eff9ff, #cbe7fa); border-color: #aad1e9;
+  }
+  .start-empty { padding: 14px; color: #687989; }
+  #all-programs {
+    border: 0; border-top: 1px solid #ddd; background: white;
+    text-align: left; padding: 10px;
+  }
+  #all-programs:hover { background: #dfedf8; }
+  .start-search { background: #e9edf2; border-top: 1px solid #c2cad4; padding: 10px 8px; }
+  #start-search { width: 100%; height: 26px; padding: 3px 7px; border: 1px solid #899baa; }
+  .start-right { padding: 4px 0; display: flex; flex-direction: column; gap: 3px; }
+  .user-avatar {
+    width: 58px; height: 58px; border: 2px solid #e9f9ff; border-radius: 5px;
+    box-shadow: 0 0 0 1px #284d67, 0 3px 8px #0007; margin: 3px auto 5px;
+    background: linear-gradient(#74bfdf, #245c9a); display: grid; place-items: center;
+  }
+  .user-avatar .icon { width: 43px; height: 43px; }
+  .user-name { color: white; text-align: center; font-weight: 600; padding-bottom: 6px; }
+  .start-shortcut {
+    border: 1px solid transparent; background: transparent; color: white;
+    text-shadow: 0 1px #123; text-align: left; padding: 9px 8px; border-radius: 3px;
+  }
+  .start-shortcut:hover { border-color: #a6c5db80; background: linear-gradient(#ffffff30, #ffffff10); }
+  .start-separator { height: 1px; background: #a6cbe63b; margin: 5px 8px; }
+  #shutdown {
+    margin: auto 6px 5px; align-self: flex-start; color: white; border: 1px solid #102d46;
+    border-radius: 3px; padding: 5px 14px;
+    background: linear-gradient(#91abc880, #496985b8 50%, #254966bd 51%, #6587a0b0);
+    box-shadow: inset 0 0 0 1px #d6e9ff45;
+  }
+  #shutdown:hover { background: linear-gradient(#adcfe1, #4c799e); }
+
+  /* Context and application menus */
+  #context-menu {
+    position: fixed; z-index: 30000; min-width: 216px;
+    border: 1px solid #979797; background: #f0f0f0;
+    box-shadow: 2px 3px 7px #0006; padding: 3px; user-select: none;
+  }
+  .menu-row { position: relative; }
+  .menu-item {
+    width: 100%; min-height: 26px; padding: 4px 12px 4px 28px;
+    border: 1px solid transparent; border-radius: 2px;
+    background: transparent; text-align: left; white-space: nowrap;
+    display: flex; align-items: center; justify-content: space-between; gap: 25px;
+  }
+  .menu-item:hover, .menu-item:focus-visible, .menu-row:focus-within > .menu-item {
+    border-color: #b7d5ed; background: linear-gradient(#f6fbff, #dcecf9); outline: none;
+  }
+  .menu-item.checked::before { content: "●"; position: absolute; left: 10px; font-size: 8px; }
+  .menu-divider { height: 1px; background: #d4d4d4; margin: 4px 4px 4px 26px; }
+  .submenu {
+    display: none; position: absolute; left: calc(100% - 2px); top: -4px;
+    min-width: 180px; padding: 3px; border: 1px solid #979797; background: #f0f0f0;
+    box-shadow: 2px 3px 7px #0004;
+  }
+  .menu-row:hover > .submenu, .menu-row:focus-within > .submenu { display: block; }
+  #context-menu.open-left .submenu { left: auto; right: calc(100% - 2px); }
+
+  .app-menubar {
+    min-height: 25px; display: flex; align-items: center; gap: 1px; padding: 1px 4px;
+    background: linear-gradient(#fff, #e9edf3); border-bottom: 1px solid #d4dbe2;
+    flex-shrink: 0;
+  }
+  .flat-button { background: transparent; border: 1px solid transparent; padding: 3px 8px; border-radius: 2px; }
+  .flat-button:hover { border-color: #a6cbe6; background: #dcecf7; }
+  .standard-button {
+    border: 1px solid #8c9ca9; border-radius: 3px; padding: 5px 13px;
+    background: linear-gradient(#fff, #e9edf0 48%, #dce2e7 49%, #edf0f3);
+    box-shadow: inset 0 0 0 1px #ffffffa0;
+  }
+  .standard-button:hover { border-color: #3c94d1; background: linear-gradient(#f2fbff, #cce6f7); }
+  .statusbar {
+    min-height: 23px; display: flex; align-items: center; justify-content: space-between;
+    padding: 3px 9px; background: #f0f0f0; border-top: 1px solid #ddd;
+    color: #59636c; font-size: 11px; flex-shrink: 0;
+  }
+
+  /* Explorer */
+  .explorer-toolbar {
+    display: flex; align-items: center; gap: 5px; padding: 6px;
+    background: linear-gradient(#f9fcff, #e5edf5); border-bottom: 1px solid #bfceda;
+  }
+  .nav-button {
+    width: 27px; height: 27px; padding: 0; border: 1px solid #a4b7c7;
+    border-radius: 50%; color: #fff; font-size: 17px;
+    background: linear-gradient(#a3d7fa, #3f8dcc 52%, #286fab 53%, #8ec9f1);
+    text-shadow: 0 1px #244e70;
+  }
+  .address-path {
+    min-width: 0; flex: 1; display: flex; align-items: center; gap: 3px; height: 27px;
+    border: 1px solid #aabac7; background: white; padding: 2px 5px; overflow: hidden;
+  }
+  .address-path .icon { width: 18px; height: 18px; }
+  .breadcrumb {
+    background: transparent; border: 0; padding: 3px 4px; white-space: nowrap;
+  }
+  .breadcrumb:hover { background: #d9edf9; }
+  .explorer-body { flex: 1; min-height: 0; display: flex; }
+  .explorer-sidebar {
+    width: 158px; flex-shrink: 0; border-right: 1px solid #d8e1e8;
+    padding: 14px 5px; background: linear-gradient(90deg, #fafcfe, #fff);
+    overflow-y: auto;
+  }
+  .sidebar-heading { color: #526678; font-weight: 600; padding: 5px 10px; }
+  .sidebar-link {
+    width: 100%; display: flex; align-items: center; gap: 7px; padding: 5px 12px;
+    border: 1px solid transparent; background: transparent; text-align: left;
+  }
+  .sidebar-link .icon { width: 17px; height: 17px; }
+  .sidebar-link:hover { background: #eef6fc; }
+  .sidebar-link.current { background: #dcebf7; border-color: #c1d8e9; }
+  .file-area {
+    flex: 1; min-width: 0; overflow: auto; padding: 14px;
+    display: flex; align-content: flex-start; align-items: flex-start; flex-wrap: wrap; gap: 10px;
+  }
+  .file-item {
+    width: 104px; min-height: 96px; padding: 8px 5px; background: transparent;
+    border: 1px solid transparent; border-radius: 3px; display: flex;
+    flex-direction: column; align-items: center; gap: 6px; cursor: default;
+  }
+  .file-item .icon { width: 46px; height: 46px; }
+  .file-item span { text-align: center; overflow-wrap: anywhere; max-width: 100%; }
+  .file-item:hover { background: #eef7ff; border-color: #d2e7f6; }
+  .file-item.selected { background: linear-gradient(#eaf5fd, #cce6f9); border-color: #8ebde0; }
+  .empty-folder { color: #6f7780; width: 100%; text-align: center; margin-top: 30px; }
+
+  /* Notepad */
+  .notepad-text {
+    flex: 1; min-height: 0; width: 100%; resize: none; border: 0;
+    outline: none !important; padding: 5px; border-radius: 0;
+    font: 14px/1.5 Consolas, "Courier New", monospace; color: #111;
+    tab-size: 4; white-space: pre; overflow: auto; background: white;
+  }
+  .notepad-text.wrap { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+  /* Calculator */
+  .calculator { background: linear-gradient(#eff5fb, #d7e3ef); padding: 10px; flex: 1; display: flex; flex-direction: column; gap: 8px; outline: none; min-height: 0; overflow: auto; }
+  .calc-mode { color: #415971; font-size: 11px; }
+  .calc-display {
+    border: 1px solid #879aac; border-radius: 3px; background: linear-gradient(#e5eefb, #fff);
+    box-shadow: inset 0 0 0 1px white; padding: 5px 9px; text-align: right;
+    min-height: 69px; flex-shrink: 0;
+  }
+  .calc-expression { height: 18px; color: #68788a; font-size: 11px; overflow: hidden; }
+  .calc-value { font: 29px/34px "Segoe UI", sans-serif; overflow: hidden; text-overflow: ellipsis; }
+  .calc-grid { flex: 1; display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(6, minmax(29px, 1fr)); gap: 5px; min-height: 210px; }
+  .calc-key {
+    min-width: 0; border: 1px solid #889caf; border-radius: 3px;
+    background: linear-gradient(#f7fafc, #e4ecf5 48%, #d5e0ed 49%, #e7eef6);
+    box-shadow: inset 0 0 0 1px #ffffffb3; font-size: 14px;
+  }
+  .calc-key.number { background: linear-gradient(#fff, #f0f4f9 49%, #e7edf5 50%, #fff); }
+  .calc-key.memory { font-size: 11px; background: linear-gradient(#eff5fa, #d6e1ed); }
+  .calc-key:hover { border-color: #dd9c30; background: linear-gradient(#fff4d8, #ffd879 50%, #ffc64d 51%, #ffeca4); }
+  .calc-key:active { background: #ffc354; }
+  .calc-key.zero { grid-column: span 2; }
+  .calc-key.equals { grid-row: span 2; }
+
+  /* Offline browser */
+  .browser-toolbar { display: flex; gap: 5px; align-items: center; padding: 7px; background: #e8f0f7; border-bottom: 1px solid #bdcddd; }
+  .browser-toolbar form { display: flex; gap: 5px; flex: 1; min-width: 0; }
+  .browser-address { flex: 1; min-width: 0; border: 1px solid #97aec1; padding: 5px 8px; background: white; }
+  .browser-page { flex: 1; overflow: auto; background: #fff; padding: 30px; color: #34495e; user-select: text; }
+  .browser-brand { font-size: 33px; font-weight: 300; color: #177caf; margin: 10px 0 0; }
+  .browser-brand .icon { width: 48px; height: 48px; vertical-align: middle; }
+  .browser-subtitle { color: #738795; margin-bottom: 25px; }
+  .browser-search { display: flex; gap: 7px; max-width: 520px; margin: 20px 0; }
+  .browser-search input { flex: 1; min-width: 0; padding: 10px; border: 1px solid #a4b9c9; }
+  .browser-notice { padding: 12px 15px; background: #eef6fb; border-left: 3px solid #59a7d5; line-height: 1.6; }
+  .search-result { max-width: 620px; padding: 16px 0; border-bottom: 1px solid #e6edf2; }
+  .result-title { border: 0; background: transparent; color: #1666ae; font-size: 18px; padding: 0; text-align: left; }
+  .result-title:hover { text-decoration: underline; }
+  .result-url { color: #398149; margin-top: 4px; }
+  .search-result p, .article-body { line-height: 1.75; white-space: pre-line; }
+  .browser-page h1 { font-weight: 400; color: #176aa0; }
+
+  /* Personalization, calendar, shutdown */
+  .settings-page { padding: 24px; overflow: auto; flex: 1; background: #fff; }
+  .settings-page h1 { margin: 0 0 8px; color: #246897; font-size: 22px; font-weight: 400; }
+  .settings-page p { line-height: 1.65; color: #647787; }
+  .theme-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px; margin: 22px 0; }
+  .theme-card { border: 1px solid #c4d2df; background: #f5f9fc; border-radius: 4px; padding: 7px; text-align: left; }
+  .theme-card.active { border-color: #4a99ce; box-shadow: 0 0 0 2px #baddf5; }
+  .theme-preview { height: 80px; display: grid; place-items: center; margin-bottom: 7px; border: 1px solid #0002; }
+  .theme-preview .icon { width: 49px; height: 49px; filter: drop-shadow(0 0 9px #fff9); }
+  .settings-row { padding: 12px 0; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid #e4ebf0; }
+  .settings-row select { padding: 5px; border: 1px solid #a3b4c2; background: white; }
+  #calendar {
+    position: absolute; right: 12px; bottom: 49px; z-index: 21000;
+    width: 288px; padding: 16px; border: 1px solid #63839b; border-radius: 5px;
+    background: #edf6faf2; box-shadow: 0 4px 20px #0006; backdrop-filter: blur(15px);
+  }
+  #calendar h2 { font-size: 15px; font-weight: 500; text-align: center; margin: 0 0 14px; }
+  .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center; }
+  .calendar-grid span { padding: 5px 0; }
+  .calendar-grid .day-name { font-size: 10px; font-weight: 600; color: #688397; }
+  .calendar-grid .today { color: #fff; background: #3089c1; border-radius: 3px; }
+  .calendar-footer { text-align: center; color: #628098; margin-top: 14px; font-size: 11px; }
+  #power-screen {
+    position: fixed; inset: 0; z-index: 50000; color: white;
+    background: radial-gradient(ellipse at 50% 38%, #1b6c9e, #05152c 80%);
+    display: flex; flex-direction: column; gap: 16px; justify-content: center; align-items: center;
+  }
+  #power-screen > .icon { width: 85px; height: 85px; filter: drop-shadow(0 0 20px #71d6ff80); }
+  #power-screen h1 { font-size: 26px; font-weight: 300; margin: 10px 0 0; }
+  #power-screen p { color: #b0cfdf; margin: 0 0 10px; }
+  #toast {
+    position: fixed; bottom: 56px; left: 50%; transform: translateX(-50%);
+    background: #f7fbfff2; border: 1px solid #7c9db9; border-radius: 4px;
+    box-shadow: 0 3px 16px #0005; padding: 10px 18px; z-index: 40000;
+    max-width: calc(100vw - 30px); text-align: center; pointer-events: none;
+  }
+  .desktop-refresh { animation: refresh .22s; }
+  @keyframes refresh { 50% { opacity: .3; } }
+
+  @media (max-width: 600px) {
+    .task-button { flex-basis: 48px; padding: 4px 10px; }
+    .task-button span, .tray-icons { display: none; }
+    .explorer-sidebar { width: 115px; }
+    .sidebar-link { padding-left: 5px; }
+    .browser-page { padding: 18px; }
+    .browser-toolbar { gap: 3px; padding: 5px; }
+    .settings-page { padding: 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+<body data-theme="blue">
+
+<!-- Inline SVG icons: no external image dependencies. -->
+<svg class="symbol-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+<defs>
+  <linearGradient id="monitor-gradient" x2="0" y2="1">
+    <stop stop-color="#b6ebff"/><stop offset=".48" stop-color="#278ed3"/><stop offset="1" stop-color="#064989"/>
+  </linearGradient>
+  <linearGradient id="folder-gradient" x2="0" y2="1">
+    <stop stop-color="#fff1a6"/><stop offset="1" stop-color="#e9ad35"/>
+  </linearGradient>
+  <linearGradient id="red-flag" x2="0" y2="1">
+    <stop stop-color="#ffb047"/><stop offset="1" stop-color="#e13e22"/>
+  </linearGradient>
+  <linearGradient id="green-flag" x2="0" y2="1">
+    <stop stop-color="#c4e857"/><stop offset="1" stop-color="#58a526"/>
+  </linearGradient>
+  <linearGradient id="blue-flag" x2="0" y2="1">
+    <stop stop-color="#68ccf8"/><stop offset="1" stop-color="#1373ca"/>
+  </linearGradient>
+  <linearGradient id="yellow-flag" x2="0" y2="1">
+    <stop stop-color="#ffe889"/><stop offset="1" stop-color="#f5b52c"/>
+  </linearGradient>
+
+  <symbol id="i-windows" viewBox="0 0 100 100">
+    <path fill="url(#red-flag)" d="M13 15Q32 7 49 15L43 46Q25 39 7 47Z"/>
+    <path fill="url(#green-flag)" d="M54 17Q73 25 92 16L86 47Q68 56 48 48Z"/>
+    <path fill="url(#blue-flag)" d="M6 52Q24 44 42 51L36 83Q18 76 0 84Z"/>
+    <path fill="url(#yellow-flag)" d="M47 53Q66 61 85 52L79 84Q60 93 41 85Z"/>
+  </symbol>
+
+  <symbol id="i-computer" viewBox="0 0 48 48">
+    <path d="M30 9h13v31H30z" fill="#b6c4ce" stroke="#617788"/>
+    <path d="M33 13h7v2h-7zm0 5h7v2h-7z" fill="#526776"/>
+    <circle cx="37" cy="35" r="2" fill="#61dc61"/>
+    <path d="M17 31h7v10h-7z" fill="#a9b9c7" stroke="#657c8e"/>
+    <path d="M10 41h22l3 3H7z" fill="#bfccd6" stroke="#647888"/>
+    <rect x="2" y="5" width="33" height="28" rx="2" fill="#d7e1e8" stroke="#526a7d" stroke-width="1.5"/>
+    <rect x="5" y="8" width="27" height="21" fill="url(#monitor-gradient)"/>
+    <path d="M5 25L32 10v7L13 29H5z" fill="#ffffff25"/>
+    <circle cx="19" cy="31" r=".8" fill="#4b9acc"/>
+  </symbol>
+
+  <symbol id="i-recycle" viewBox="0 0 48 48">
+    <path d="M11 9h27l-3 34H14z" fill="#e5f4f7c9" stroke="#7c9cae" stroke-width="1.5"/>
+    <ellipse cx="24.5" cy="9" rx="14" ry="4.5" fill="#f6fcff" stroke="#8cabbc"/>
+    <ellipse cx="24.5" cy="9" rx="10" ry="2.3" fill="#afc7d5"/>
+    <path d="M17 15l1 22m14-22-2 22" stroke="#ffffff" stroke-width="2" opacity=".7"/>
+    <path d="m24 18 5 8-4-1-2-4-3 4-3-2 5-6zm8 9-1 9h-9l3-3h4l-1-5zm-12 8-8-5 5-8 1 4-2 4 5 2z" fill="#3daf53" stroke="#298848" stroke-width=".5"/>
+  </symbol>
+
+  <symbol id="i-text" viewBox="0 0 48 48">
+    <path d="M10 3h21l8 8v34H10z" fill="#fff" stroke="#7794ab" stroke-width="1.5"/>
+    <path d="M31 3v9h8" fill="#dcebf5" stroke="#7794ab"/>
+    <path d="M15 18h19M15 23h19M15 28h19M15 33h19M15 38h13" stroke="#9bacbc" stroke-width="1.5"/>
+  </symbol>
+
+  <symbol id="i-folder" viewBox="0 0 48 48">
+    <path d="M4 10h16l4 5h20v25H4z" fill="#e1ac44" stroke="#aa7b23"/>
+    <path d="M7 12h12l4 5h18v20H7z" fill="#fff0aa"/>
+    <path d="M3 19h43l-5 23H6z" fill="url(#folder-gradient)" stroke="#ba8b32"/>
+    <path d="M5 21h38" stroke="#fff8d6" stroke-width="2"/>
+  </symbol>
+
+  <symbol id="i-notepad" viewBox="0 0 48 48">
+    <path d="m9 5 29 3-3 37-29-3z" fill="#ccddea" stroke="#657e93"/>
+    <path d="m12 4 29 3-4 35-29-3z" fill="#fff" stroke="#7e9db4"/>
+    <path d="m12 5 29 3-1 7-29-3z" fill="#86bdd9"/>
+    <path d="m15 3-1 8m7-7-1 8m7-7-1 8m7-7-1 8m7-7-1 8" stroke="#4d748f" stroke-width="2"/>
+    <path d="m14 19 20 2m-21 4 20 2m-21 4 20 2m-21 4 15 2" stroke="#a7c6d8"/>
+    <path d="m34 34 9-23 3 2-9 23-4 4z" fill="#edc557" stroke="#9f8136"/>
+  </symbol>
+
+  <symbol id="i-calculator" viewBox="0 0 48 48">
+    <rect x="8" y="3" width="32" height="42" rx="3" fill="#b3c8db" stroke="#516d86" stroke-width="1.5"/>
+    <rect x="12" y="7" width="24" height="10" rx="1" fill="#e9f7df" stroke="#748d84"/>
+    <path d="M25 10h2v4h-2zm5 0h2v4h-2z" fill="#486551"/>
+    <g fill="#f5f8fc" stroke="#71869a">
+      <rect x="12" y="21" width="6" height="5" rx="1"/><rect x="21" y="21" width="6" height="5" rx="1"/>
+      <rect x="12" y="29" width="6" height="5" rx="1"/><rect x="21" y="29" width="6" height="5" rx="1"/>
+      <rect x="12" y="37" width="6" height="5" rx="1"/><rect x="21" y="37" width="6" height="5" rx="1"/>
+    </g>
+    <rect x="30" y="21" width="6" height="5" rx="1" fill="#df9d85" stroke="#987268"/>
+    <rect x="30" y="29" width="6" height="13" rx="1" fill="#77a9d2" stroke="#557f9e"/>
+  </symbol>
+
+  <symbol id="i-browser" viewBox="0 0 48 48">
+    <circle cx="25" cy="25" r="18" fill="#198bce"/>
+    <path d="M13 24c0-17 26-18 25 2H17c0 11 13 13 18 5l5 3c-9 16-33 9-33-8z" fill="#48b9ed"/>
+    <path d="M18 21h14c-1-9-12-10-14 0" fill="#fff"/>
+    <path d="M5 32C-7 14 41-7 46 7c4 10-21 27-37 29" fill="none" stroke="#f3c743" stroke-width="4"/>
+    <path d="M9 36c-7-1-7-5-4-10" fill="none" stroke="#ffe798" stroke-width="2"/>
+  </symbol>
+
+  <symbol id="i-settings" viewBox="0 0 48 48">
+    <rect x="3" y="7" width="42" height="33" rx="2" fill="#e4eef8" stroke="#6986a1"/>
+    <path d="M4 8h40v8H4z" fill="#68a5d2"/>
+    <circle cx="14" cy="26" r="6" fill="#6aafd6"/>
+    <path d="M7 36c0-8 14-8 14 0" fill="#518db6"/>
+    <path d="M26 23h13m-13 6h13m-13 6h9" stroke="#91aabe" stroke-width="2"/>
+  </symbol>
+
+  <symbol id="i-user" viewBox="0 0 48 48">
+    <circle cx="24" cy="15" r="9" fill="#e6f5ff"/>
+    <path d="M7 44v-8c0-15 34-15 34 0v8z" fill="#e6f5ff"/>
+  </symbol>
+
+  <symbol id="i-network" viewBox="0 0 24 24">
+    <path d="M3 20v-4h3v4zm5 0v-8h3v8zm5 0V8h3v12zm5 0V4h3v16z" fill="#ecf7ff" stroke="#234d70" stroke-width=".5"/>
+  </symbol>
+
+  <symbol id="i-volume" viewBox="0 0 24 24">
+    <path d="M3 9h4l5-4v14l-5-4H3z" fill="#ecf7ff" stroke="#355973"/>
+    <path d="M15 8q5 4 0 8m3-11q8 7 0 14" fill="none" stroke="#ecf7ff" stroke-width="1.5"/>
+  </symbol>
+</defs>
+</svg>
+
+<div id="wallpaper" aria-hidden="true">
+  <svg viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="wall-base" x2=".8" y2="1">
+        <stop stop-color="var(--wall-top)"/><stop offset="1" stop-color="var(--wall-bottom)"/>
+      </linearGradient>
+      <radialGradient id="wall-light">
+        <stop stop-color="var(--wall-glow)" stop-opacity=".9"/>
+        <stop offset=".4" stop-color="var(--wall-glow)" stop-opacity=".25"/>
+        <stop offset="1" stop-color="var(--wall-glow)" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="wall-wave" x1="0" y1="1" x2="1" y2="0">
+        <stop stop-color="#c1f5ff" stop-opacity=".1"/><stop offset=".55" stop-color="#d0fbff" stop-opacity=".7"/>
+        <stop offset="1" stop-color="#45bbfa" stop-opacity="0"/>
+      </linearGradient>
+      <filter id="logo-glow" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="30"/>
+      </filter>
+    </defs>
+    <rect width="1600" height="1000" fill="url(#wall-base)"/>
+    <ellipse cx="980" cy="660" rx="990" ry="730" fill="url(#wall-light)"/>
+    <path d="M-100 1010C370 610 750 1140 1730 210" fill="none" stroke="#043e8290" stroke-width="165"/>
+    <path d="M-100 1010C400 600 830 1160 1730 220" fill="none" stroke="url(#wall-wave)" stroke-width="4"/>
+    <path d="M-120 970C500 520 1030 1000 1680 260" fill="none" stroke="#9edfff30" stroke-width="36"/>
+    <path d="M-60 1020C320 650 1030 975 1710 270" fill="none" stroke="#b1f8ff60" stroke-width="2"/>
+    <path d="M-60 890C380 820 820 970 1630 650" fill="none" stroke="#b8e7ff20" stroke-width="2"/>
+    <path d="M770 610 950 1000 1240 1000 930 490z" fill="#c5faff08"/>
+    <path d="M870 480 1180 0 1320 0 900 550z" fill="#f2fcff08"/>
+    <ellipse cx="884" cy="480" rx="135" ry="110" fill="#d6faff" opacity=".42" filter="url(#logo-glow)"/>
+    <g transform="translate(750 345) rotate(-7 145 145)">
+      <use href="#i-windows" width="292" height="292"/>
+    </g>
+    <g fill="#dcfaff">
+      <circle cx="1040" cy="696" r="2" opacity=".8"/>
+      <circle cx="1085" cy="670" r="1.5" opacity=".6"/>
+      <circle cx="560" cy="793" r="2" opacity=".5"/>
+      <circle cx="1160" cy="700" r="1" opacity=".7"/>
+    </g>
+    <path d="M1120 747q24-52 56-46-29 2-38 35 30-28 49-16-30-3-51 27"
+      fill="#b8eb6560"/>
+  </svg>
+</div>
+
+<main id="desktop" aria-label="Desktop">
+  <div id="selection-box" hidden></div>
+</main>
+<div id="windows" aria-label="Open application windows"></div>
+
+<section id="start-menu" aria-label="Start menu" hidden>
+  <div class="start-left">
+    <div id="start-programs"></div>
+    <button id="all-programs">▸ &nbsp; All Programs</button>
+    <div class="start-search">
+      <input id="start-search" type="search" placeholder="Search programs and files" aria-label="Search programs and files" autocomplete="off">
+    </div>
+  </div>
+  <div class="start-right">
+    <div class="user-avatar"><svg class="icon"><use href="#i-user"/></svg></div>
+    <div class="user-name">Web User</div>
+    <button class="start-shortcut" data-location="documents">Documents</button>
+    <button class="start-shortcut" data-location="pictures">Pictures</button>
+    <button class="start-shortcut" data-location="downloads">Downloads</button>
+    <div class="start-separator"></div>
+    <button class="start-shortcut" data-location="computer">Computer</button>
+    <button class="start-shortcut" data-launch="personalize">Control Panel</button>
+    <button class="start-shortcut" data-launch="help">Help and Support</button>
+    <button id="shutdown">Shut down</button>
+  </div>
+</section>
+
+<footer id="taskbar" aria-label="Taskbar">
+  <button id="start-button" title="Start" aria-label="Start" aria-expanded="false">
+    <svg class="icon"><use href="#i-windows"/></svg>
+  </button>
+  <div id="task-buttons" aria-label="Running applications"></div>
+  <div id="tray">
+    <div class="tray-icons" aria-hidden="true">
+      <span>▴</span>
+      <svg class="icon"><use href="#i-network"/></svg>
+      <svg class="icon"><use href="#i-volume"/></svg>
+    </div>
+    <button id="clock" aria-label="Date and time"></button>
+    <button id="show-desktop" title="Show desktop" aria-label="Show desktop"></button>
+  </div>
+</footer>
+
+<div id="context-menu" role="menu" hidden></div>
+<section id="calendar" aria-label="Calendar" hidden></section>
+<div id="toast" role="status" aria-live="polite" hidden></div>
+
+<section id="power-screen" aria-label="Computer is shut down" hidden>
+  <svg class="icon"><use href="#i-windows"/></svg>
+  <h1>Shut down</h1>
+  <p>Your desktop has been safely turned off.</p>
+  <button id="restart" class="standard-button">Start Windows</button>
+</section>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ---------- Utilities and storage ---------- */
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+  const clamp = (value, min, max) => Math.max(min, Math.min(value, max));
+  const escapeHTML = value => String(value).replace(/[&<>"']/g, char =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+  const icon = (name, className = '') =>
+    `<svg class="icon ${className}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
+  const uid = () => globalThis.crypto?.randomUUID?.() ||
+    `id-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+  const Storage = {
+    read(key, fallback) {
+      try {
+        const value = localStorage.getItem(`aero-desktop:${key}`);
+        return value ? JSON.parse(value) : fallback;
+      } catch { return fallback; }
+    },
+    write(key, value) {
+      try {
+        localStorage.setItem(`aero-desktop:${key}`, JSON.stringify(value));
+        return true;
+      } catch { return false; }
+    }
+  };
+
+  const themes = {
+    blue: { name: 'Windows 7', colors: '#062b66, #1597cb' },
+    nature: { name: 'Nature', colors: '#073e45, #55ad77' },
+    sunset: { name: 'Sunset', colors: '#351c55, #d77f83' },
+    graphite: { name: 'Graphite', colors: '#151e30, #647d95' }
+  };
+  const sizes = {
+    large: { width: 104, height: 106, icon: 60 },
+    medium: { width: 86, height: 88, icon: 44 },
+    small: { width: 76, height: 72, icon: 32 }
+  };
+
+  let prefs = Object.assign({ theme: 'blue', size: 'medium', positions: {} }, Storage.read('preferences', {}));
+  if (!themes[prefs.theme]) prefs.theme = 'blue';
+  if (!sizes[prefs.size]) prefs.size = 'medium';
+  if (!prefs.positions || typeof prefs.positions !== 'object') prefs.positions = {};
+
+  let toastTimer;
+  function toast(message) {
+    const element = $('#toast');
+    element.textContent = message;
+    element.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => element.hidden = true, 3400);
+  }
+  function savePrefs() { Storage.write('preferences', prefs); }
+
+  const welcomeText =
+`Welcome to your Windows 7 web desktop!
+
+GETTING STARTED
+• Double-click a desktop icon to open it.
+• Drag icons to rearrange the desktop.
+• Drag an empty desktop area to select multiple icons.
+• Right-click the desktop for view, sorting, and wallpaper options.
+• Open programs using the Start menu or its search box.
+
+WINDOWS
+Drag a title bar to move a window.
+Drag any edge or corner to resize it.
+Double-click a title bar to maximize or restore.
+Click a taskbar button to minimize or restore its window.
+The narrow button at the far right shows the desktop.
+
+APPLICATIONS
+Notepad: type freely, then File → Save to download a text file.
+Calculator: use its buttons or your keyboard.
+Explorer: double-click folders and files to open them.
+Internet Explorer: search the included offline knowledge library.
+
+SHORTCUTS
+Ctrl+Esc: Start menu
+Alt+F4: close the focused application
+Ctrl+S: save in Notepad
+Ctrl+A: select all desktop icons (when the desktop has focus)
+F5: refresh the desktop
+
+Your wallpaper, icon positions, new documents, and saved document
+contents are kept in this browser when local storage is available.
+Unsaved Notepad changes are retained while the window stays open.
+
+This is a self-contained web simulation, not an actual operating system.`;
+
+  const defaultFiles = [
+    { id: 'computer', parent: 'desktop', name: 'Computer', type: 'computer', system: true },
+    { id: 'recycle', parent: 'desktop', name: 'Recycle Bin', type: 'recycle', system: true },
+    { id: 'welcome', parent: 'desktop', name: 'Text Document.txt', type: 'text', text: welcomeText },
+    { id: 'documents', parent: 'computer', name: 'Documents', type: 'folder', system: true },
+    { id: 'downloads', parent: 'computer', name: 'Downloads', type: 'folder', system: true },
+    { id: 'pictures', parent: 'computer', name: 'Pictures', type: 'folder', system: true },
+    { id: 'notes', parent: 'documents', name: 'My Notes.txt', type: 'text', text: 'My Notes\n========\n\nA little space for your ideas.\n' },
+    { id: 'projects', parent: 'documents', name: 'Projects', type: 'folder' },
+    { id: 'project-readme', parent: 'projects', name: 'Read Me.txt', type: 'text', text: 'Project ideas\n\n1. Build something useful.\n2. Make it beautiful.\n3. Share it with the world.\n' }
+  ];
+
+  let files = Storage.read('files', null);
+  if (!Array.isArray(files) ||
+      !files.every(file => file && typeof file.id === 'string' && typeof file.name === 'string') ||
+      !defaultFiles.filter(file => file.system).every(required => files.some(file => file.id === required.id))) {
+    files = defaultFiles;
+  }
+  const fileById = id => files.find(file => file.id === id);
+  const children = parent => files.filter(file => file.parent === parent);
+  const fileIcon = file => ({
+    computer: 'computer', recycle: 'recycle', text: 'text', folder: 'folder'
+  })[file.type] || 'text';
+
+  function persistFiles() {
+    if (!Storage.write('files', files)) toast('Browser storage is unavailable. Download documents to keep a copy.');
+    document.dispatchEvent(new CustomEvent('filesystemchange'));
+  }
+  function uniqueName(parent, base, extension = '') {
+    let name = base + extension, n = 2;
+    while (children(parent).some(file => file.name.toLowerCase() === name.toLowerCase())) {
+      name = `${base} (${n++})${extension}`;
+    }
+    return name;
+  }
+  function newTextDocument(parent = 'desktop') {
+    const file = {
+      id: uid(), parent, name: uniqueName(parent, 'New Text Document', '.txt'),
+      type: 'text', text: ''
+    };
+    files.push(file);
+    persistFiles();
+    if (parent === 'desktop') {
+      Desktop.selectOnly(file.id);
+      Desktop.rename(file.id);
+    }
+    return file;
+  }
+
+  /* ---------- Window manager ---------- */
+  const WindowManager = {
+    windows: new Map(),
+    active: null,
+    serial: 0,
+    zIndex: 10,
+    desktopSnapshot: null,
+
+    bounds() {
+      const area = $('#windows');
+      return { width: area.clientWidth, height: area.clientHeight };
+    },
+
+    create({ title, icon: iconName, width = 680, height = 450, minWidth = 320, minHeight = 220, app }) {
+      const id = `window-${++this.serial}`;
+      const bounds = this.bounds();
+      width = Math.min(width, bounds.width);
+      height = Math.min(height, bounds.height);
+      const offset = ((this.serial - 1) % 7) * 24;
+      const rect = {
+        x: clamp((bounds.width - width) / 2 + offset - 45, 0, bounds.width - width),
+        y: clamp((bounds.height - height) / 2 + offset - 45, 0, bounds.height - height),
+        width, height
+      };
+      const element = document.createElement('section');
+      element.className = 'window';
+      element.id = id;
+      element.setAttribute('role', 'dialog');
+      element.setAttribute('aria-labelledby', `${id}-title`);
+      element.innerHTML = `
+        <header class="titlebar">
+          ${icon(iconName)}
+          <span class="window-title" id="${id}-title"></span>
+          <div class="window-controls">
+            <button data-control="minimize" title="Minimize" aria-label="Minimize">−</button>
+            <button data-control="maximize" title="Maximize" aria-label="Maximize">□</button>
+            <button class="close" data-control="close" title="Close" aria-label="Close">×</button>
+          </div>
+        </header>
+        <div class="window-content"></div>
+        ${['n','s','e','w','ne','nw','se','sw'].map(direction =>
+          `<div class="resize-handle resize-${direction}" data-resize="${direction}" aria-hidden="true"></div>`
+        ).join('')}`;
+      $('#windows').append(element);
+
+      const task = document.createElement('button');
+      task.className = 'task-button';
+      task.innerHTML = `${icon(iconName)}<span></span>`;
+      $('#task-buttons').append(task);
+
+      const state = {
+        id, element, task, app, rect, restoreRect: null, maximized: false,
+        minimized: false, minWidth, minHeight, title, cleanups: [], beforeClose: null,
+        body: $('.window-content', element),
+        setTitle: value => {
+          state.title = value;
+          $('.window-title', element).textContent = value;
+          $('span', task).textContent = value;
+          task.title = value;
+          task.setAttribute('aria-label', value);
+        },
+        onCleanup: callback => state.cleanups.push(callback)
+      };
+      this.windows.set(id, state);
+      state.setTitle(title);
+      this.layout(state);
+
+      element.addEventListener('pointerdown', () => this.focus(id), true);
+      task.addEventListener('click', () => {
+        hidePopups();
+        if (this.active === id && !state.minimized) this.minimize(id);
+        else this.restore(id);
+      });
+
+      $$('.window-controls button', element).forEach(button => {
+        button.addEventListener('pointerdown', event => event.stopPropagation());
+        button.addEventListener('click', () => {
+          this.focus(id);
+          const control = button.dataset.control;
+          if (control === 'minimize') this.minimize(id);
+          if (control === 'maximize') this.toggleMaximize(id);
+          if (control === 'close') this.close(id);
+        });
+      });
+
+      const titlebar = $('.titlebar', element);
+      titlebar.addEventListener('pointerdown', event => {
+        if (event.button !== 0 || event.target.closest('.window-controls')) return;
+        this.beginDrag(event, state);
+      });
+      titlebar.addEventListener('dblclick', event => {
+        if (!event.target.closest('.window-controls')) this.toggleMaximize(id);
+      });
+      $$('.resize-handle', element).forEach(handle => {
+        handle.addEventListener('pointerdown', event => this.beginResize(event, state, handle.dataset.resize));
+      });
+
+      this.desktopSnapshot = null;
+      this.focus(id);
+      return state;
+    },
+
+    layout(state) {
+      if (state.maximized) {
+        const { width, height } = this.bounds();
+        Object.assign(state.element.style, { left: '0px', top: '0px', width: width + 'px', height: height + 'px' });
+      } else {
+        const { x, y, width, height } = state.rect;
+        Object.assign(state.element.style, {
+          left: x + 'px', top: y + 'px', width: width + 'px', height: height + 'px'
+        });
+      }
+      state.element.classList.toggle('maximized', state.maximized);
+      const button = $('[data-control="maximize"]', state.element);
+      button.textContent = state.maximized ? '❐' : '□';
+      button.title = state.maximized ? 'Restore Down' : 'Maximize';
+      button.setAttribute('aria-label', button.title);
+    },
+
+    focus(id) {
+      const state = this.windows.get(id);
+      if (!state || state.minimized) return;
+      this.active = id;
+      if (++this.zIndex > 9000) {
+        [...this.windows.values()]
+          .sort((a, b) => Number(a.element.style.zIndex) - Number(b.element.style.zIndex))
+          .forEach((item, index) => item.element.style.zIndex = index + 10);
+        this.zIndex = this.windows.size + 20;
+      }
+      state.element.style.zIndex = this.zIndex;
+      this.windows.forEach(item => {
+        const focused = item.id === id;
+        item.element.classList.toggle('focused', focused);
+        item.task.classList.toggle('active', focused);
+        item.task.setAttribute('aria-pressed', String(focused));
+      });
+    },
+
+    blur() {
+      this.active = null;
+      this.windows.forEach(state => {
+        state.element.classList.remove('focused');
+        state.task.classList.remove('active');
+        state.task.setAttribute('aria-pressed', 'false');
+      });
+    },
+
+    focusTop() {
+      const visible = [...this.windows.values()]
+        .filter(state => !state.minimized)
+        .sort((a, b) => Number(b.element.style.zIndex) - Number(a.element.style.zIndex));
+      if (visible.length) this.focus(visible[0].id);
+      else this.blur();
+    },
+
+    minimize(id) {
+      const state = this.windows.get(id);
+      if (!state) return;
+      state.minimized = true;
+      state.element.hidden = true;
+      state.task.classList.remove('active');
+      state.task.setAttribute('aria-pressed', 'false');
+      if (this.active === id) this.focusTop();
+    },
+
+    restore(id) {
+      const state = this.windows.get(id);
+      if (!state) return;
+      state.minimized = false;
+      state.element.hidden = false;
+      this.focus(id);
+    },
+
+    toggleMaximize(id) {
+      const state = this.windows.get(id);
+      if (!state) return;
+      if (!state.maximized) {
+        state.restoreRect = { ...state.rect };
+        state.maximized = true;
+      } else {
+        state.maximized = false;
+        if (state.restoreRect) state.rect = { ...state.restoreRect };
+      }
+      this.constrain(state);
+      this.layout(state);
+      this.focus(id);
+    },
+
+    close(id, force = false) {
+      const state = this.windows.get(id);
+      if (!state) return true;
+      if (!force && state.beforeClose && state.beforeClose() === false) return false;
+      state.cleanups.forEach(cleanup => {
+        try { cleanup(); } catch (error) { console.error(error); }
+      });
+      state.element.remove();
+      state.task.remove();
+      this.windows.delete(id);
+      if (this.active === id) this.focusTop();
+      return true;
+    },
+
+    constrain(state) {
+      const bounds = this.bounds();
+      state.rect.width = Math.min(state.rect.width, bounds.width);
+      state.rect.height = Math.min(state.rect.height, bounds.height);
+      state.rect.x = clamp(state.rect.x, 0, bounds.width - state.rect.width);
+      state.rect.y = clamp(state.rect.y, 0, bounds.height - state.rect.height);
+    },
+
+    beginDrag(event, state) {
+      event.preventDefault();
+      this.focus(state.id);
+      const target = event.currentTarget;
+      const startX = event.clientX;
+      const startY = event.clientY;
+      let original = { ...state.rect };
+      let restored = false;
+      const wasMaximized = state.maximized;
+      const horizontalRatio = event.clientX / Math.max(1, this.bounds().width);
+
+      trackPointer(event, target, move => {
+        if (wasMaximized && !restored) {
+          if (Math.hypot(move.clientX - startX, move.clientY - startY) < 5) return;
+          state.maximized = false;
+          state.rect = { ...(state.restoreRect || state.rect) };
+          state.rect.x = move.clientX - state.rect.width * horizontalRatio;
+          state.rect.y = Math.max(0, move.clientY - 15);
+          original = {
+            ...state.rect,
+            x: state.rect.x - (move.clientX - startX),
+            y: state.rect.y - (move.clientY - startY)
+          };
+          restored = true;
+        }
+        state.rect.x = original.x + move.clientX - startX;
+        state.rect.y = original.y + move.clientY - startY;
+        this.constrain(state);
+        this.layout(state);
+      });
+    },
+
+    beginResize(event, state, direction) {
+      if (event.button !== 0 || state.maximized) return;
+      event.preventDefault();
+      event.stopPropagation();
+      this.focus(state.id);
+      const original = { ...state.rect };
+      const startX = event.clientX;
+      const startY = event.clientY;
+      const bounds = this.bounds();
+      const minWidth = Math.min(state.minWidth, bounds.width);
+      const minHeight = Math.min(state.minHeight, bounds.height);
+
+      trackPointer(event, event.currentTarget, move => {
+        const dx = move.clientX - startX;
+        const dy = move.clientY - startY;
+        let left = original.x;
+        let top = original.y;
+        let right = original.x + original.width;
+        let bottom = original.y + original.height;
+
+        if (direction.includes('e')) right = clamp(right + dx, left + minWidth, bounds.width);
+        if (direction.includes('s')) bottom = clamp(bottom + dy, top + minHeight, bounds.height);
+        if (direction.includes('w')) left = clamp(left + dx, 0, right - minWidth);
+        if (direction.includes('n')) top = clamp(top + dy, 0, bottom - minHeight);
+
+        state.rect = { x: left, y: top, width: right - left, height: bottom - top };
+        this.layout(state);
+      });
+    },
+
+    showDesktop() {
+      if (this.desktopSnapshot) {
+        const snapshot = this.desktopSnapshot;
+        this.desktopSnapshot = null;
+        snapshot.ids.forEach(id => this.restore(id));
+        if (snapshot.active) this.focus(snapshot.active);
+        return;
+      }
+      const visible = [...this.windows.values()].filter(state => !state.minimized);
+      if (!visible.length) return;
+      this.desktopSnapshot = { ids: visible.map(state => state.id), active: this.active };
+      visible.forEach(state => this.minimize(state.id));
+    }
+  };
+
+  function trackPointer(event, target, onMove, onEnd = () => {}) {
+    const pointerId = event.pointerId;
+    target.setPointerCapture(pointerId);
+    const oldSelect = document.body.style.userSelect;
+    document.body.style.userSelect = 'none';
+
+    function move(next) {
+      if (next.pointerId === pointerId) onMove(next);
+    }
+    function end(next) {
+      if (next.pointerId !== pointerId) return;
+      target.removeEventListener('pointermove', move);
+      target.removeEventListener('pointerup', end);
+      target.removeEventListener('pointercancel', end);
+      target.removeEventListener('lostpointercapture', end);
+      if (target.hasPointerCapture(pointerId)) target.releasePointerCapture(pointerId);
+      document.body.style.userSelect = oldSelect;
+      onEnd(next);
+    }
+    target.addEventListener('pointermove', move);
+    target.addEventListener('pointerup', end);
+    target.addEventListener('pointercancel', end);
+    target.addEventListener('lostpointercapture', end);
+  }
+
+  /* ---------- Shared popup menus ---------- */
+  function hidePopups() {
+    $('#context-menu').hidden = true;
+    $('#calendar').hidden = true;
+    setStartOpen(false);
+  }
+
+  function showMenu(items, x, y) {
+    hidePopups();
+    const menu = $('#context-menu');
+    menu.replaceChildren();
+
+    function populate(container, entries) {
+      entries.forEach(entry => {
+        if (entry.separator) {
+          const divider = document.createElement('div');
+          divider.className = 'menu-divider';
+          divider.setAttribute('role', 'separator');
+          container.append(divider);
+          return;
+        }
+        const row = document.createElement('div');
+        row.className = 'menu-row';
+        const button = document.createElement('button');
+        button.className = 'menu-item' + (entry.checked ? ' checked' : '');
+        button.setAttribute('role', entry.checkable ? 'menuitemradio' : 'menuitem');
+        if (entry.checkable) button.setAttribute('aria-checked', String(!!entry.checked));
+        button.disabled = !!entry.disabled;
+        const label = document.createElement('span');
+        label.textContent = entry.label;
+        button.append(label);
+        row.append(button);
+
+        if (entry.children) {
+          button.setAttribute('aria-haspopup', 'menu');
+          const arrow = document.createElement('span');
+          arrow.textContent = '▸';
+          button.append(arrow);
+          const submenu = document.createElement('div');
+          submenu.className = 'submenu';
+          submenu.setAttribute('role', 'menu');
+          populate(submenu, entry.children);
+          row.append(submenu);
+          button.addEventListener('click', () => {
+            button.focus();
+          });
+          button.addEventListener('keydown', event => {
+            if (event.key === 'ArrowRight') {
+              event.preventDefault();
+              $('button', submenu)?.focus();
+            }
+          });
+        } else {
+          button.addEventListener('click', () => {
+            menu.hidden = true;
+            entry.action?.();
+          });
+        }
+        container.append(row);
+      });
+    }
+
+    populate(menu, items);
+    menu.hidden = false;
+    menu.classList.toggle('open-left', x + 410 > innerWidth);
+    menu.style.left = clamp(x, 0, innerWidth - menu.offsetWidth) + 'px';
+    menu.style.top = clamp(y, 0, innerHeight - menu.offsetHeight - 3) + 'px';
+  }
+
+  $('#context-menu').addEventListener('keydown', event => {
+    const current = event.target.closest('.menu-item');
+    if (!current) return;
+    const container = current.parentElement.parentElement;
+    const buttons = [...container.children]
+      .map(row => row.querySelector(':scope > button'))
+      .filter(button => button && !button.disabled);
+    const index = buttons.indexOf(current);
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      const direction = event.key === 'ArrowDown' ? 1 : -1;
+      buttons[(index + direction + buttons.length) % buttons.length]?.focus();
+    }
+    if (event.key === 'ArrowLeft' && container.classList.contains('submenu')) {
+      event.preventDefault();
+      container.parentElement.querySelector(':scope > button')?.focus();
+    }
+  });
+
+  /* ---------- Desktop icons, selection, dragging ---------- */
+  const Desktop = {
+    selected: new Set(),
+    order: [],
+    element: $('#desktop'),
+
+    init() {
+      this.element.tabIndex = -1;
+      this.applySize();
+      this.render();
+
+      this.element.addEventListener('pointerdown', event => {
+        if (event.button !== 0) return;
+        hidePopups();
+        WindowManager.blur();
+        this.element.focus({ preventScroll: true });
+        const button = event.target.closest('.desktop-icon');
+        if (button) this.beginIconDrag(event, button);
+        else this.beginSelection(event);
+      });
+
+      this.element.addEventListener('dblclick', event => {
+        const button = event.target.closest('.desktop-icon');
+        if (button) openFile(button.dataset.file);
+      });
+
+      this.element.addEventListener('contextmenu', event => {
+        event.preventDefault();
+        const button = event.target.closest('.desktop-icon');
+        if (button && !this.selected.has(button.dataset.file)) this.selectOnly(button.dataset.file);
+        showMenu(this.contextItems(button?.dataset.file), event.clientX, event.clientY);
+      });
+
+      document.addEventListener('filesystemchange', () => this.render());
+    },
+
+    applySize() {
+      const size = sizes[prefs.size];
+      document.documentElement.style.setProperty('--icon-width', size.width + 'px');
+      document.documentElement.style.setProperty('--icon-height', size.height + 'px');
+      document.documentElement.style.setProperty('--icon-size', size.icon + 'px');
+    },
+
+    render() {
+      $$('.desktop-icon', this.element).forEach(element => element.remove());
+      const desktopFiles = children('desktop');
+      const knownIds = new Set(desktopFiles.map(file => file.id));
+      this.selected.forEach(id => { if (!knownIds.has(id)) this.selected.delete(id); });
+      this.order = this.order.filter(id => knownIds.has(id));
+      desktopFiles.forEach(file => {
+        if (!this.order.includes(file.id)) this.order.push(file.id);
+      });
+
+      const size = sizes[prefs.size];
+      const rows = Math.max(1, Math.floor((this.element.clientHeight - 10) / size.height));
+      const occupied = [];
+
+      this.order.forEach((id, index) => {
+        const file = fileById(id);
+        let position = prefs.positions[id];
+        if (!position || !Number.isFinite(position.x) || !Number.isFinite(position.y)) {
+          let slot = index;
+          do {
+            position = {
+              x: 6 + Math.floor(slot / rows) * size.width,
+              y: 7 + (slot % rows) * size.height
+            };
+            slot++;
+          } while (occupied.some(other =>
+            Math.abs(other.x - position.x) < size.width &&
+            Math.abs(other.y - position.y) < size.height
+          ) && slot < desktopFiles.length + 100);
+        }
+        position = {
+          x: clamp(position.x, 0, Math.max(0, this.element.clientWidth - size.width)),
+          y: clamp(position.y, 0, Math.max(0, this.element.clientHeight - size.height))
+        };
+        prefs.positions[id] = position;
+        occupied.push(position);
+
+        const button = document.createElement('button');
+        button.className = 'desktop-icon';
+        button.dataset.file = id;
+        button.tabIndex = 0;
+        button.title = file.name;
+        button.style.left = position.x + 'px';
+        button.style.top = position.y + 'px';
+        button.innerHTML = `${icon(fileIcon(file))}<span class="label">${escapeHTML(file.name)}</span>`;
+        button.setAttribute('aria-label', file.name);
+        button.addEventListener('keydown', event => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            openFile(id);
+          }
+          if (event.key === ' ') {
+            event.preventDefault();
+            this.selectOnly(id);
+          }
+        });
+        this.element.append(button);
+      });
+      this.paintSelection();
+    },
+
+    paintSelection() {
+      $$('.desktop-icon', this.element).forEach(button => {
+        const selected = this.selected.has(button.dataset.file);
+        button.classList.toggle('selected', selected);
+        button.setAttribute('aria-pressed', String(selected));
+      });
+    },
+
+    selectOnly(id) {
+      this.selected = new Set(id ? [id] : []);
+      this.paintSelection();
+    },
+
+    beginIconDrag(event, button) {
+      event.preventDefault();
+      const id = button.dataset.file;
+      if (event.ctrlKey || event.metaKey) {
+        if (this.selected.has(id)) this.selected.delete(id);
+        else this.selected.add(id);
+      } else if (!this.selected.has(id)) {
+        this.selected = new Set([id]);
+      }
+      this.paintSelection();
+      if (!this.selected.has(id)) return;
+
+      const startX = event.clientX;
+      const startY = event.clientY;
+      const size = sizes[prefs.size];
+      const originals = [...this.selected].map(selectedId => ({
+        id: selectedId,
+        ...prefs.positions[selectedId],
+        element: $$('.desktop-icon', this.element).find(item => item.dataset.file === selectedId)
+      }));
+      let moved = false;
+
+      trackPointer(event, button, move => {
+        let dx = move.clientX - startX;
+        let dy = move.clientY - startY;
+        if (!moved && Math.hypot(dx, dy) < 4) return;
+        moved = true;
+        const minX = Math.min(...originals.map(item => item.x));
+        const minY = Math.min(...originals.map(item => item.y));
+        const maxX = Math.max(...originals.map(item => item.x + size.width));
+        const maxY = Math.max(...originals.map(item => item.y + size.height));
+        dx = clamp(dx, -minX, Math.max(-minX, this.element.clientWidth - maxX));
+        dy = clamp(dy, -minY, Math.max(-minY, this.element.clientHeight - maxY));
+        originals.forEach(item => {
+          const position = { x: item.x + dx, y: item.y + dy };
+          prefs.positions[item.id] = position;
+          item.element.style.left = position.x + 'px';
+          item.element.style.top = position.y + 'px';
+        });
+      }, () => {
+        if (moved) savePrefs();
+      });
+    },
+
+    beginSelection(event) {
+      event.preventDefault();
+      const rect = this.element.getBoundingClientRect();
+      const startX = event.clientX - rect.left;
+      const startY = event.clientY - rect.top;
+      const additive = event.ctrlKey || event.metaKey;
+      const initial = additive ? new Set(this.selected) : new Set();
+      this.selected = new Set(initial);
+      this.paintSelection();
+      const box = $('#selection-box');
+      Object.assign(box.style, {
+        left: startX + 'px', top: startY + 'px', width: '0px', height: '0px'
+      });
+
+      trackPointer(event, this.element, move => {
+        const endX = clamp(move.clientX - rect.left, 0, rect.width);
+        const endY = clamp(move.clientY - rect.top, 0, rect.height);
+        const left = Math.min(startX, endX);
+        const top = Math.min(startY, endY);
+        const right = Math.max(startX, endX);
+        const bottom = Math.max(startY, endY);
+        box.hidden = false;
+        Object.assign(box.style, {
+          left: left + 'px', top: top + 'px',
+          width: right - left + 'px', height: bottom - top + 'px'
+        });
+        this.selected = new Set(initial);
+        $$('.desktop-icon', this.element).forEach(button => {
+          const x = button.offsetLeft;
+          const y = button.offsetTop;
+          if (x < right && x + button.offsetWidth > left &&
+              y < bottom && y + button.offsetHeight > top) {
+            this.selected.add(button.dataset.file);
+          }
+        });
+        this.paintSelection();
+      }, () => box.hidden = true);
+    },
+
+    sort(by) {
+      const sorted = children('desktop').sort((a, b) => {
+        if (by === 'type') return a.type.localeCompare(b.type) || a.name.localeCompare(b.name);
+        return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+      });
+      this.order = sorted.map(file => file.id);
+      sorted.forEach(file => delete prefs.positions[file.id]);
+      this.render();
+      savePrefs();
+    },
+
+    setSize(size) {
+      prefs.size = size;
+      children('desktop').forEach(file => delete prefs.positions[file.id]);
+      this.applySize();
+      this.render();
+      savePrefs();
+    },
+
+    refresh() {
+      this.render();
+      this.element.classList.remove('desktop-refresh');
+      void this.element.offsetWidth;
+      this.element.classList.add('desktop-refresh');
+    },
+
+    rename(id) {
+      const file = fileById(id);
+      if (!file || file.system) return;
+      const entered = prompt('Enter a new name:', file.name);
+      if (entered === null) return;
+      const name = entered.trim();
+      if (!name || /[\\/:*?"<>|]/.test(name)) {
+        toast('Choose a name without these characters: \\ / : * ? " < > |');
+        return;
+      }
+      if (children(file.parent).some(other => other.id !== id && other.name.toLowerCase() === name.toLowerCase())) {
+        toast('A file with that name already exists.');
+        return;
+      }
+      file.name = name;
+      persistFiles();
+    },
+
+    deleteSelected() {
+      const targets = [...this.selected].map(fileById).filter(file => file && !file.system);
+      if (!targets.length) return;
+      if (!confirm(`Move ${targets.length === 1 ? '"' + targets[0].name + '"' : targets.length + ' items'} to the Recycle Bin?`)) return;
+      targets.forEach(file => {
+        file.originalParent = file.parent;
+        file.parent = 'recycle';
+      });
+      this.selected.clear();
+      persistFiles();
+    },
+
+    contextItems(id) {
+      const file = fileById(id);
+      const entries = [];
+      if (file) {
+        entries.push({ label: 'Open', action: () => openFile(id) });
+        if (!file.system) {
+          entries.push({ label: 'Rename', action: () => this.rename(id) });
+          entries.push({ label: 'Delete', action: () => this.deleteSelected() });
+        }
+        entries.push({ separator: true });
+      }
+      entries.push(
+        {
+          label: 'View',
+          children: ['large', 'medium', 'small'].map(size => ({
+            label: size[0].toUpperCase() + size.slice(1) + ' icons',
+            checked: prefs.size === size, checkable: true,
+            action: () => this.setSize(size)
+          }))
+        },
+        {
+          label: 'Sort by',
+          children: [
+            { label: 'Name', action: () => this.sort('name') },
+            { label: 'Item type', action: () => this.sort('type') }
+          ]
+        },
+        { label: 'Refresh', action: () => this.refresh() },
+        { separator: true },
+        {
+          label: 'New',
+          children: [{ label: 'Text Document', action: () => newTextDocument() }]
+        },
+        { separator: true },
+        { label: 'Personalize', action: () => launch('personalize') }
+      );
+      return entries;
+    }
+  };
+
+  /* ---------- File Explorer ---------- */
+  function openFile(id) {
+    const file = fileById(id);
+    if (!file) return;
+    if (file.type === 'text') launch('notepad', { file });
+    else launch('explorer', { location: file.id });
+  }
+
+  function createExplorer({ location = 'computer' } = {}) {
+    const state = WindowManager.create({
+      title: 'Computer', icon: 'folder', width: 760, height: 490, app: 'explorer'
+    });
+    state.body.innerHTML = `
+      <div class="explorer-toolbar">
+        <button class="nav-button" data-nav="back" title="Back" aria-label="Back">←</button>
+        <button class="nav-button" data-nav="forward" title="Forward" aria-label="Forward">→</button>
+        <button class="flat-button" data-nav="up" title="Up one level" aria-label="Up one level">↑</button>
+        <nav class="address-path" aria-label="Folder path"></nav>
+      </div>
+      <div class="app-menubar">
+        <button class="flat-button" data-action="new">New text document</button>
+        <button class="flat-button" data-action="refresh">Refresh</button>
+        <button class="flat-button" data-action="empty" hidden>Empty Recycle Bin</button>
+      </div>
+      <div class="explorer-body">
+        <nav class="explorer-sidebar" aria-label="Folders">
+          <div class="sidebar-heading">Favorites</div>
+          ${[
+            ['desktop', 'computer', 'Desktop'],
+            ['downloads', 'folder', 'Downloads'],
+            ['documents', 'folder', 'Documents'],
+            ['pictures', 'folder', 'Pictures']
+          ].map(([id, name, label]) =>
+            `<button class="sidebar-link" data-location="${id}">${icon(name)}${label}</button>`
+          ).join('')}
+          <div class="sidebar-heading" style="margin-top:16px">Computer</div>
+          <button class="sidebar-link" data-location="computer">${icon('computer')}Computer</button>
+          <button class="sidebar-link" data-location="recycle">${icon('recycle')}Recycle Bin</button>
+        </nav>
+        <div class="file-area" aria-label="Files"></div>
+      </div>
+      <div class="statusbar"><span class="item-count"></span><span>Web Desktop</span></div>`;
+
+    let history = [location];
+    let historyIndex = 0;
+    let selectedId = null;
+    const area = $('.file-area', state.body);
+
+    function folderName(id) {
+      if (id === 'desktop') return 'Desktop';
+      return fileById(id)?.name || 'Computer';
+    }
+
+    function navigate(id, addHistory = true) {
+      if (id !== 'desktop' && !fileById(id)) id = 'computer';
+      location = id;
+      selectedId = null;
+      if (addHistory) {
+        history = history.slice(0, historyIndex + 1);
+        history.push(id);
+        historyIndex++;
+      }
+      render();
+    }
+
+    function render() {
+      if (location !== 'desktop' && !fileById(location)) location = 'computer';
+      state.setTitle(folderName(location));
+      $('[data-nav="back"]', state.body).disabled = historyIndex === 0;
+      $('[data-nav="forward"]', state.body).disabled = historyIndex === history.length - 1;
+      $('[data-nav="up"]', state.body).disabled = location === 'desktop';
+      $('[data-action="new"]', state.body).hidden = location === 'recycle';
+      $('[data-action="empty"]', state.body).hidden = location !== 'recycle';
+
+      const path = [];
+      let cursor = location;
+      const visited = new Set();
+      while (cursor && !visited.has(cursor)) {
+        visited.add(cursor);
+        path.unshift(cursor);
+        if (cursor === 'desktop') break;
+        cursor = fileById(cursor)?.parent || 'desktop';
+      }
+      const pathElement = $('.address-path', state.body);
+      pathElement.innerHTML = icon(location === 'computer' ? 'computer' : 'folder');
+      path.forEach((id, index) => {
+        if (index) {
+          const separator = document.createElement('span');
+          separator.textContent = '›';
+          pathElement.append(separator);
+        }
+        const button = document.createElement('button');
+        button.className = 'breadcrumb';
+        button.textContent = folderName(id);
+        button.addEventListener('click', () => navigate(id));
+        pathElement.append(button);
+      });
+
+      $$('.sidebar-link', state.body).forEach(button =>
+        button.classList.toggle('current', button.dataset.location === location));
+
+      const listing = children(location).sort((a, b) => {
+        const folderA = a.type !== 'text';
+        const folderB = b.type !== 'text';
+        return Number(folderB) - Number(folderA) || a.name.localeCompare(b.name, undefined, { numeric: true });
+      });
+      area.replaceChildren();
+      listing.forEach(file => {
+        const button = document.createElement('button');
+        button.className = 'file-item';
+        button.classList.toggle('selected', selectedId === file.id);
+        button.innerHTML = `${icon(fileIcon(file))}<span>${escapeHTML(file.name)}</span>`;
+        button.title = file.name;
+        button.addEventListener('click', () => {
+          selectedId = file.id;
+          $$('.file-item', area).forEach(item => item.classList.remove('selected'));
+          button.classList.add('selected');
+        });
+        const open = () => {
+          if (file.type === 'text') openFile(file.id);
+          else navigate(file.id);
+        };
+        button.addEventListener('dblclick', open);
+        button.addEventListener('keydown', event => {
+          if (event.key === 'Enter') { event.preventDefault(); open(); }
+        });
+        button.addEventListener('contextmenu', event => {
+          event.preventDefault();
+          selectedId = file.id;
+          const items = [{ label: 'Open', action: open }];
+          if (location === 'recycle') {
+            items.push({
+              label: 'Restore',
+              action: () => {
+                file.parent = fileById(file.originalParent) || file.originalParent === 'desktop'
+                  ? file.originalParent : 'desktop';
+                delete file.originalParent;
+                persistFiles();
+              }
+            });
+            items.push({
+              label: 'Delete permanently',
+              action: () => {
+                if (confirm(`Permanently delete "${file.name}"?`)) {
+                  removeFilesRecursively([file.id]);
+                  persistFiles();
+                }
+              }
+            });
+          } else if (!file.system) {
+            items.push({ label: 'Rename', action: () => Desktop.rename(file.id) });
+            items.push({
+              label: 'Delete',
+              action: () => {
+                file.originalParent = file.parent;
+                file.parent = 'recycle';
+                persistFiles();
+              }
+            });
+          }
+          showMenu(items, event.clientX, event.clientY);
+        });
+        area.append(button);
+      });
+      if (!listing.length) area.innerHTML = '<div class="empty-folder">This folder is empty.</div>';
+      $('.item-count', state.body).textContent = `${listing.length} item${listing.length === 1 ? '' : 's'}`;
+    }
+
+    $$('.sidebar-link', state.body).forEach(button =>
+      button.addEventListener('click', () => navigate(button.dataset.location)));
+
+    $('[data-nav="back"]', state.body).addEventListener('click', () => {
+      if (historyIndex > 0) navigate(history[--historyIndex], false);
+    });
+    $('[data-nav="forward"]', state.body).addEventListener('click', () => {
+      if (historyIndex < history.length - 1) navigate(history[++historyIndex], false);
+    });
+    $('[data-nav="up"]', state.body).addEventListener('click', () =>
+      navigate(fileById(location)?.parent || 'desktop'));
+    $('[data-action="new"]', state.body).addEventListener('click', () => {
+      const file = newTextDocument(location);
+      if (location !== 'desktop') Desktop.rename(file.id);
+    });
+    $('[data-action="refresh"]', state.body).addEventListener('click', render);
+    $('[data-action="empty"]', state.body).addEventListener('click', () => {
+      if (!children('recycle').length) return;
+      if (confirm('Permanently delete every item in the Recycle Bin?')) {
+        removeFilesRecursively(children('recycle').map(file => file.id));
+        persistFiles();
+      }
+    });
+    area.addEventListener('contextmenu', event => {
+      if (event.target.closest('.file-item')) return;
+      event.preventDefault();
+      showMenu([
+        { label: 'Refresh', action: render },
+        { label: 'New Text Document', disabled: location === 'recycle', action: () => newTextDocument(location) }
+      ], event.clientX, event.clientY);
+    });
+
+    document.addEventListener('filesystemchange', render);
+    state.onCleanup(() => document.removeEventListener('filesystemchange', render));
+    render();
+    return state;
+  }
+
+  function removeFilesRecursively(ids) {
+    const deleted = new Set(ids);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      files.forEach(file => {
+        if (deleted.has(file.parent) && !deleted.has(file.id)) {
+          deleted.add(file.id);
+          changed = true;
+        }
+      });
+    }
+    files = files.filter(file => !deleted.has(file.id));
+  }
+
+  /* ---------- Notepad ---------- */
+  function createNotepad({ file = null, text = '', title = 'Untitled' } = {}) {
+    const state = WindowManager.create({
+      title: `${file?.name || title} - Notepad`,
+      icon: 'notepad', width: 650, height: 440, app: 'notepad'
+    });
+    let currentFile = file;
+    let documentName = file?.name || title;
+    let savedText = String(file?.text ?? text);
+    let dirty = false;
+    state.body.innerHTML = `
+      <div class="app-menubar">
+        <button class="flat-button" data-menu="file">File</button>
+        <button class="flat-button" data-menu="edit">Edit</button>
+        <button class="flat-button" data-menu="format">Format</button>
+        <button class="flat-button" data-menu="help">Help</button>
+      </div>
+      <textarea class="notepad-text" aria-label="Document text" spellcheck="false"></textarea>
+      <div class="statusbar">
+        <span class="notepad-status">Ready</span>
+        <span class="notepad-position">Ln 1, Col 1</span>
+      </div>`;
+
+    const textarea = $('.notepad-text', state.body);
+    textarea.value = savedText;
+
+    function update() {
+      dirty = textarea.value !== savedText;
+      state.dirty = dirty;
+      state.setTitle(`${dirty ? '*' : ''}${documentName} - Notepad`);
+      const preceding = textarea.value.slice(0, textarea.selectionStart);
+      const lines = preceding.split('\n');
+      $('.notepad-position', state.body).textContent =
+        `Ln ${lines.length}, Col ${lines[lines.length - 1].length + 1}`;
+      $('.notepad-status', state.body).textContent =
+        `${textarea.value.length.toLocaleString()} characters${dirty ? ' • Unsaved' : ''}`;
+    }
+
+    function save(saveAs = false) {
+      let name = documentName;
+      if (saveAs || !currentFile) {
+        const answer = prompt('Save text document as:', name === 'Untitled' ? 'Untitled.txt' : name);
+        if (answer === null) return false;
+        name = answer.trim();
+        if (!name || /[\\/:*?"<>|]/.test(name)) {
+          toast('Please enter a valid file name.');
+          return false;
+        }
+        if (!/\.txt$/i.test(name)) name += '.txt';
+        const parent = currentFile?.parent || 'documents';
+        const collision = children(parent).find(item =>
+          item.name.toLowerCase() === name.toLowerCase() && item.id !== currentFile?.id);
+        if (collision) {
+          toast('A file with this name already exists. Choose another name.');
+          return false;
+        }
+        if (saveAs || !currentFile) {
+          currentFile = { id: uid(), parent, type: 'text', name, text: textarea.value };
+          files.push(currentFile);
+        }
+      }
+
+      if (!fileById(currentFile.id)) {
+        currentFile = {
+          id: uid(), parent: 'documents', type: 'text',
+          name: uniqueName('documents', name.replace(/\.txt$/i, ''), '.txt'),
+          text: textarea.value
+        };
+        files.push(currentFile);
+      }
+      currentFile.name = name;
+      currentFile.text = textarea.value;
+      documentName = name;
+      savedText = textarea.value;
+      persistFiles();
+
+      const blob = new Blob([textarea.value], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = name.replace(/[\\/:*?"<>|]/g, '_');
+      document.body.append(anchor);
+      anchor.click();
+      anchor.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      update();
+      toast(`Saved ${name}. A text download has been requested.`);
+      return true;
+    }
+
+    function confirmDiscard() {
+      return !dirty || confirm('This document has unsaved changes. Discard them?');
+    }
+
+    function openLocal() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.txt,.md,.csv,.log,text/*';
+      input.addEventListener('change', async () => {
+        const local = input.files[0];
+        if (!local) return;
+        if (local.size > 5 * 1024 * 1024) {
+          toast('Please choose a text file smaller than 5 MB.');
+          return;
+        }
+        try {
+          const content = await local.text();
+          if (!confirmDiscard()) return;
+          currentFile = null;
+          documentName = local.name;
+          savedText = content;
+          textarea.value = content;
+          update();
+        } catch { toast('This file could not be read.'); }
+      });
+      input.click();
+    }
+
+    const menus = {
+      file: () => [
+        {
+          label: 'New',
+          action: () => {
+            if (!confirmDiscard()) return;
+            currentFile = null;
+            documentName = 'Untitled';
+            savedText = '';
+            textarea.value = '';
+            update();
+            textarea.focus();
+          }
+        },
+        { label: 'Open…', action: openLocal },
+        { separator: true },
+        { label: 'Save                          Ctrl+S', action: () => save() },
+        { label: 'Save As…', action: () => save(true) },
+        { separator: true },
+        { label: 'Exit', action: () => WindowManager.close(state.id) }
+      ],
+      edit: () => [
+        {
+          label: 'Undo                          Ctrl+Z',
+          action: () => { textarea.focus(); document.execCommand('undo'); update(); }
+        },
+        {
+          label: 'Select All                    Ctrl+A',
+          action: () => { textarea.focus(); textarea.select(); update(); }
+        },
+        {
+          label: 'Time/Date',
+          action: () => {
+            textarea.setRangeText(new Date().toLocaleString(), textarea.selectionStart, textarea.selectionEnd, 'end');
+            update();
+            textarea.focus();
+          }
+        }
+      ],
+      format: () => [{
+        label: 'Word Wrap', checked: textarea.classList.contains('wrap'), checkable: true,
+        action: () => textarea.classList.toggle('wrap')
+      }],
+      help: () => [{
+        label: 'About Notepad',
+        action: () => toast('Notepad — plain text editing, local file opening, and .txt downloads.')
+      }]
+    };
+
+    $$('[data-menu]', state.body).forEach(button => {
+      button.addEventListener('click', () => {
+        const rect = button.getBoundingClientRect();
+        showMenu(menus[button.dataset.menu](), rect.left, rect.bottom);
+      });
+    });
+    textarea.addEventListener('input', update);
+    textarea.addEventListener('click', update);
+    textarea.addEventListener('keyup', update);
+    textarea.addEventListener('select', update);
+    textarea.addEventListener('keydown', event => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+        event.preventDefault();
+        save(event.shiftKey);
+      } else if (event.key === 'Tab') {
+        event.preventDefault();
+        textarea.setRangeText('\t', textarea.selectionStart, textarea.selectionEnd, 'end');
+        update();
+      }
+    });
+
+    const onRename = () => {
+      if (currentFile && fileById(currentFile.id)) {
+        documentName = currentFile.name;
+        update();
+      }
+    };
+    document.addEventListener('filesystemchange', onRename);
+    state.onCleanup(() => document.removeEventListener('filesystemchange', onRename));
+    state.beforeClose = confirmDiscard;
+    state.save = save;
+    update();
+    textarea.focus();
+    return state;
+  }
+
+  /* ---------- Calculator: no eval or dynamic code ---------- */
+  function createCalculator() {
+    const state = WindowManager.create({
+      title: 'Calculator', icon: 'calculator',
+      width: 300, height: 407, minWidth: 270, minHeight: 365, app: 'calculator'
+    });
+    state.body.innerHTML = `
+      <div class="app-menubar">
+        <span class="flat-button">Standard</span>
+        <button class="flat-button" data-action="help">Help</button>
+      </div>
+      <div class="calculator" tabindex="0" aria-label="Calculator, keyboard input supported">
+        <div class="calc-mode">Standard</div>
+        <div class="calc-display" aria-live="polite">
+          <div class="calc-expression"></div>
+          <div class="calc-value">0</div>
+        </div>
+        <div class="calc-grid"></div>
+      </div>`;
+
+    const keys = [
+      ['MC','MC','memory'], ['MR','MR','memory'], ['MS','MS','memory'], ['M+','M+','memory'], ['M−','M-','memory'],
+      ['←','back',''], ['CE','CE',''], ['C','C',''], ['±','sign',''], ['√','sqrt',''],
+      ['7','7','number'], ['8','8','number'], ['9','9','number'], ['÷','/',''], ['%','percent',''],
+      ['4','4','number'], ['5','5','number'], ['6','6','number'], ['×','*',''], ['1/x','reciprocal',''],
+      ['1','1','number'], ['2','2','number'], ['3','3','number'], ['−','-',''], ['=','=','equals'],
+      ['0','0','number zero'], ['.','.','number'], ['+','+','']
+    ];
+    const grid = $('.calc-grid', state.body);
+    keys.forEach(([label, value, className]) => {
+      const button = document.createElement('button');
+      button.className = `calc-key ${className}`;
+      button.textContent = label;
+      button.dataset.key = value;
+      button.addEventListener('click', () => {
+        press(value);
+        $('.calculator', state.body).focus({ preventScroll: true });
+      });
+      grid.append(button);
+    });
+
+    let display = '0';
+    let accumulator = null;
+    let operator = null;
+    let fresh = true;
+    let memory = 0;
+    let lastOperator = null;
+    let lastOperand = null;
+    let expression = '';
+
+    const pretty = value => ({ '*': '×', '/': '÷', '-': '−', '+': '+' })[value] || value;
+    const numeric = () => Number(display);
+    const format = value => {
+      if (!Number.isFinite(value)) throw new Error('Cannot divide by zero');
+      return String(Number(value.toPrecision(12)));
+    };
+    function calculate(a, b, op) {
+      if (op === '+') return a + b;
+      if (op === '-') return a - b;
+      if (op === '*') return a * b;
+      if (op === '/') {
+        if (b === 0) throw new Error('Cannot divide by zero');
+        return a / b;
+      }
+      return b;
+    }
+    function render() {
+      $('.calc-value', state.body).textContent = display;
+      $('.calc-expression', state.body).textContent = (memory !== 0 ? 'M   ' : '') + expression;
+    }
+    function reset() {
+      display = '0'; accumulator = null; operator = null;
+      fresh = true; lastOperator = null; lastOperand = null; expression = '';
+    }
+
+    function press(key) {
+      try {
+        if (display === 'Error') reset();
+        if (/^\d$/.test(key)) {
+          if (fresh || display === '0') display = key;
+          else if (display.replace(/\D/g, '').length < 15) display += key;
+          fresh = false;
+        } else if (key === '.') {
+          if (fresh) display = '0';
+          if (!display.includes('.')) display += '.';
+          fresh = false;
+        } else if (['+', '-', '*', '/'].includes(key)) {
+          const value = numeric();
+          if (operator && !fresh) {
+            display = format(calculate(accumulator, value, operator));
+            accumulator = numeric();
+          } else accumulator = value;
+          operator = key;
+          lastOperator = null;
+          expression = `${display} ${pretty(operator)}`;
+          fresh = true;
+        } else if (key === '=') {
+          if (operator) {
+            const operand = numeric();
+            const previous = accumulator;
+            display = format(calculate(previous, operand, operator));
+            expression = `${previous} ${pretty(operator)} ${operand} =`;
+            lastOperator = operator;
+            lastOperand = operand;
+            operator = null;
+            accumulator = null;
+          } else if (lastOperator !== null) {
+            const previous = numeric();
+            display = format(calculate(previous, lastOperand, lastOperator));
+            expression = `${previous} ${pretty(lastOperator)} ${lastOperand} =`;
+          }
+          fresh = true;
+        } else if (key === 'C') reset();
+        else if (key === 'CE') { display = '0'; fresh = true; }
+        else if (key === 'back') {
+          if (!fresh) display = display.length > 1 ? display.slice(0, -1) : '0';
+          if (display === '-') display = '0';
+        } else if (key === 'sign') {
+          if (numeric() !== 0) display = display.startsWith('-') ? display.slice(1) : '-' + display;
+        } else if (key === 'sqrt') {
+          if (numeric() < 0) throw new Error('Invalid input');
+          expression = `√(${display})`;
+          display = format(Math.sqrt(numeric()));
+          fresh = true;
+        } else if (key === 'reciprocal') {
+          expression = `1 / (${display})`;
+          display = format(calculate(1, numeric(), '/'));
+          fresh = true;
+        } else if (key === 'percent') {
+          const value = numeric();
+          display = format(
+            operator && ['+', '-'].includes(operator) ? accumulator * value / 100 : value / 100
+          );
+        } else if (key === 'MC') memory = 0;
+        else if (key === 'MR') { display = format(memory); fresh = true; }
+        else if (key === 'MS') { memory = numeric(); fresh = true; }
+        else if (key === 'M+') { memory = Number(format(memory + numeric())); fresh = true; }
+        else if (key === 'M-') { memory = Number(format(memory - numeric())); fresh = true; }
+      } catch (error) {
+        display = 'Error';
+        expression = error.message;
+        operator = null;
+        accumulator = null;
+        fresh = true;
+      }
+      render();
+    }
+
+    $('.calculator', state.body).addEventListener('keydown', event => {
+      if (event.ctrlKey || event.altKey || event.metaKey) return;
+      const mappings = { Enter: '=', Escape: 'C', Backspace: 'back', Delete: 'CE', '%': 'percent', ',': '.' };
+      const key = mappings[event.key] || event.key;
+      if (/^[0-9.+*/=-]$/.test(key) || ['C', 'CE', 'back', 'percent'].includes(key)) {
+        event.preventDefault();
+        press(key);
+      }
+    });
+    $('[data-action="help"]', state.body).addEventListener('click', () =>
+      toast('Use numbers and + − × ÷. Enter evaluates; Backspace removes a digit; Escape clears.'));
+    $('.calculator', state.body).focus();
+    return state;
+  }
+
+  /* ---------- Offline Internet Explorer ---------- */
+  const knowledge = [
+    {
+      id: 'welcome', title: 'Welcome to the offline web', keywords: 'internet browser search help offline explorer',
+      summary: 'A small, built-in knowledge library that works without a network connection.',
+      body: `This browser is a self-contained simulation. Its address bar searches a local collection of articles rather than connecting to the public internet.
+
+Search for Windows, keyboard shortcuts, Notepad, Calculator, files, or personalization. You can also enter web:// followed by an article name, such as web://windows.
+
+No requests are sent to a server, and no browsing data leaves this page. Browser history is maintained independently for each Internet Explorer window.`
+    },
+    {
+      id: 'windows', title: 'Meet your Windows 7 web desktop', keywords: 'windows aero desktop start taskbar operating system',
+      summary: 'Explore Aero-style windows, the Start menu, the taskbar, and your desktop.',
+      body: `The desktop is your workspace. Double-click an icon to open it, or use the Start menu to launch a program.
+
+Each application runs inside an Aero-style window. Drag its title bar to move it. Drag the borders to resize it. Double-click the title bar to maximize or restore.
+
+The taskbar shows every running application. Clicking its active button minimizes a window; clicking it again restores it.
+
+Use the thin Show Desktop button at the far right of the taskbar to hide your windows together. Click it again to bring them back.`
+    },
+    {
+      id: 'notepad', title: 'Writing and saving with Notepad', keywords: 'text document notepad write save download file',
+      summary: 'Create plain text documents, open local files, and download your work.',
+      body: `Notepad edits plain text. Launch it from the Start menu or double-click a text document.
+
+Choose File → Save or press Ctrl+S to keep the document in the virtual filesystem and request a .txt download. File → Save As creates another document.
+
+File → Open lets you read a text file from your device. Format → Word Wrap wraps long lines.
+
+A star in the window title indicates unsaved changes. Closing an edited document asks for confirmation before discarding them.`
+    },
+    {
+      id: 'calculator', title: 'Using the standard Calculator', keywords: 'calculator math arithmetic add subtract multiply divide percentage memory',
+      summary: 'Basic arithmetic, square roots, percentages, and memory controls.',
+      body: `Click the calculator buttons or use your keyboard. The standard calculator evaluates operations in sequence, like a traditional pocket calculator.
+
+Enter evaluates the current operation. Escape clears the calculator. Backspace removes the last digit.
+
+The % button converts a value to a percentage. For addition and subtraction, the percentage is relative to the first operand: 200 + 10 % = gives 220.
+
+MC clears memory, MR recalls memory, MS stores the displayed number, and M+ or M− adds or subtracts from memory.`
+    },
+    {
+      id: 'files', title: 'Managing files and folders', keywords: 'files folders explorer documents downloads recycle restore delete',
+      summary: 'Navigate folders and manage documents in the virtual filesystem.',
+      body: `File Explorer has shortcuts for Desktop, Documents, Downloads, Pictures, Computer, and the Recycle Bin.
+
+Double-click a folder to enter it. Use the Back, Forward, and Up buttons to navigate. Clicking a breadcrumb in the address bar jumps to that location.
+
+Create a document with the New text document button or the desktop context menu. Right-click a document to rename or delete it.
+
+Deleted items go to the Recycle Bin. Right-click an item there to restore it. Emptying the Recycle Bin permanently removes its contents.
+
+These files belong to this web desktop. They are not your device's actual folders. Use Notepad's Save command to download real copies.`
+    },
+    {
+      id: 'shortcuts', title: 'Keyboard shortcuts', keywords: 'keyboard shortcuts hotkeys ctrl alt f4 f5 escape',
+      summary: 'Useful keyboard commands for the desktop and its applications.',
+      body: `Ctrl+Esc — open or close the Start menu.
+Alt+F4 — close the focused application, where the browser permits interception.
+Escape — dismiss the Start menu or a popup.
+F5 — refresh the desktop without reloading this page.
+Ctrl+A — select every desktop icon when the desktop has focus.
+Enter — open a focused desktop icon or file.
+F2 — rename the selected desktop document.
+Delete — move selected desktop documents to the Recycle Bin.
+Ctrl+S — save the current Notepad document.
+
+Some browser or operating-system shortcuts cannot be overridden by a web page.`
+    },
+    {
+      id: 'personalize', title: 'Personalize your desktop', keywords: 'personalize wallpaper theme blue nature sunset graphite icons large small',
+      summary: 'Change the wallpaper palette and desktop icon sizes.',
+      body: `Right-click an empty area of the desktop and choose Personalize. You can also open Control Panel from the Start menu.
+
+Choose Windows 7, Nature, Sunset, or Graphite to change the wallpaper and glass-frame palette.
+
+Choose large, medium, or small desktop icons from the View submenu. Drag icons to arrange them, or use Sort by to organize them automatically.
+
+Preferences are stored locally when browser storage is available. Private browsing or browser cleanup may remove them.`
+    },
+    {
+      id: 'privacy', title: 'Privacy and local storage', keywords: 'privacy storage data security local offline browser',
+      summary: 'What this self-contained desktop stores, and where it stores it.',
+      body: `This page uses no external scripts, fonts, tracking services, or remote images.
+
+The virtual filesystem, saved document contents, wallpaper choice, and icon positions are stored using your browser's local storage when available.
+
+Unsaved text remains only in the open Notepad window. Save and download important documents before leaving the page.
+
+Local browser storage is not encrypted storage or a backup service. Avoid placing sensitive data in a shared browser profile.`
+    }
+  ];
+
+  function createBrowser() {
+    const state = WindowManager.create({
+      title: 'Internet Explorer', icon: 'browser', width: 800, height: 540, app: 'browser'
+    });
+    state.body.innerHTML = `
+      <div class="browser-toolbar">
+        <button class="nav-button" data-nav="back" aria-label="Back" title="Back">←</button>
+        <button class="nav-button" data-nav="forward" aria-label="Forward" title="Forward">→</button>
+        <button class="flat-button" data-nav="home" title="Home" aria-label="Home">⌂</button>
+        <form>
+          <input class="browser-address" aria-label="Address or search" autocomplete="off" spellcheck="false">
+          <button class="standard-button" type="submit">Go</button>
+        </form>
+      </div>
+      <div class="app-menubar">
+        <span style="padding:3px 8px;color:#526c80">Internet Explorer • Offline edition</span>
+      </div>
+      <div class="browser-page"></div>
+      <div class="statusbar"><span>Local content · No network requests</span><span>Protected Mode: On</span></div>`;
+
+    const page = $('.browser-page', state.body);
+    const address = $('.browser-address', state.body);
+    let history = [{ type: 'home' }];
+    let index = 0;
+
+    function navigate(route, record = true) {
+      if (record) {
+        history = history.slice(0, index + 1);
+        history.push(route);
+        index++;
+      }
+      render(route);
+    }
+
+    function search(value) {
+      const query = value.trim();
+      if (!query || /^web:\/\/home\/?$/i.test(query)) {
+        navigate({ type: 'home' });
+        return;
+      }
+      if (/^web:\/\//i.test(query)) {
+        const id = query.replace(/^web:\/\//i, '').replace(/\/$/, '').toLowerCase();
+        if (knowledge.some(article => article.id === id)) {
+          navigate({ type: 'article', id });
+          return;
+        }
+      }
+      navigate({ type: 'search', query });
+    }
+
+    function render(route) {
+      $('[data-nav="back"]', state.body).disabled = index === 0;
+      $('[data-nav="forward"]', state.body).disabled = index === history.length - 1;
+      page.replaceChildren();
+      if (route.type === 'home') {
+        address.value = 'web://home';
+        state.setTitle('Welcome - Internet Explorer');
+        page.innerHTML = `
+          <div class="browser-brand">${icon('browser')} Discover</div>
+          <div class="browser-subtitle">Your little corner of the offline internet.</div>
+          <form class="browser-search">
+            <input aria-label="Search the offline library" placeholder="Search Windows, files, shortcuts…" autocomplete="off">
+            <button class="standard-button">Search</button>
+          </form>
+          <div class="browser-notice">
+            <strong>Built for offline exploration.</strong><br>
+            Search the included knowledge library. External websites are not loaded in this simulation.
+          </div>
+          <h2 style="font-size:16px;font-weight:400;margin-top:27px">Explore the desktop</h2>`;
+        const form = $('.browser-search', page);
+        form.addEventListener('submit', event => {
+          event.preventDefault();
+          search($('input', form).value);
+        });
+        knowledge.slice(1, 4).forEach(article => addResult(article));
+      } else if (route.type === 'article') {
+        const article = knowledge.find(item => item.id === route.id) || knowledge[0];
+        address.value = `web://${article.id}`;
+        state.setTitle(`${article.title} - Internet Explorer`);
+        page.innerHTML = `
+          <div class="result-url">web://${escapeHTML(article.id)}</div>
+          <h1>${escapeHTML(article.title)}</h1>
+          <div class="article-body">${escapeHTML(article.body)}</div>`;
+      } else {
+        address.value = route.query;
+        state.setTitle(`${route.query} - Internet Explorer`);
+        const terms = route.query.toLowerCase().split(/\s+/).filter(Boolean);
+        const ranked = knowledge.map(article => {
+          const haystack = `${article.title} ${article.keywords} ${article.summary} ${article.body}`.toLowerCase();
+          return { article, score: terms.reduce((score, term) => score + (haystack.includes(term) ? 1 : 0), 0) };
+        }).filter(result => result.score > 0).sort((a, b) => b.score - a.score);
+        page.innerHTML = `
+          <h1 style="font-size:22px;margin-top:0">Search: ${escapeHTML(route.query)}</h1>
+          <p style="color:#718492">${ranked.length} local result${ranked.length === 1 ? '' : 's'}</p>`;
+        if (!ranked.length) {
+          page.innerHTML += `
+            <div class="browser-notice">No matching local articles. Try “Windows”, “Notepad”,
+            “Calculator”, “files”, “shortcuts”, or “privacy”.<br>
+            This offline browser does not access public websites.</div>`;
+        }
+        ranked.forEach(result => addResult(result.article));
+      }
+      page.scrollTop = 0;
+    }
+
+    function addResult(article) {
+      const result = document.createElement('article');
+      result.className = 'search-result';
+      result.innerHTML = `
+        <button class="result-title">${escapeHTML(article.title)}</button>
+        <div class="result-url">web://${escapeHTML(article.id)}</div>
+        <p>${escapeHTML(article.summary)}</p>`;
+      $('button', result).addEventListener('click', () => navigate({ type: 'article', id: article.id }));
+      page.append(result);
+    }
+
+    $('.browser-toolbar form', state.body).addEventListener('submit', event => {
+      event.preventDefault();
+      search(address.value);
+    });
+    address.addEventListener('focus', () => address.select());
+    $('[data-nav="back"]', state.body).addEventListener('click', () => {
+      if (index > 0) navigate(history[--index], false);
+    });
+    $('[data-nav="forward"]', state.body).addEventListener('click', () => {
+      if (index < history.length - 1) navigate(history[++index], false);
+    });
+    $('[data-nav="home"]', state.body).addEventListener('click', () => navigate({ type: 'home' }));
+    render(history[0]);
+    return state;
+  }
+
+  /* ---------- Personalization ---------- */
+  function applyTheme(theme) {
+    prefs.theme = theme;
+    document.body.dataset.theme = theme;
+    savePrefs();
+    document.dispatchEvent(new CustomEvent('preferenceschange'));
+  }
+
+  function createPersonalization() {
+    const state = WindowManager.create({
+      title: 'Personalization', icon: 'settings', width: 650, height: 515, app: 'personalize'
+    });
+
+    function render() {
+      state.body.innerHTML = `
+        <div class="explorer-toolbar">
+          ${icon('settings')}
+          <div class="address-path">Control Panel &nbsp; › &nbsp; Appearance and Personalization</div>
+        </div>
+        <div class="settings-page">
+          <h1>Change the visuals and sounds on your computer</h1>
+          <p>Choose a theme to change the desktop background and Aero window color.</p>
+          <div class="theme-grid">
+            ${Object.entries(themes).map(([id, theme]) => `
+              <button class="theme-card ${prefs.theme === id ? 'active' : ''}"
+                data-theme-choice="${id}" aria-pressed="${prefs.theme === id}">
+                <div class="theme-preview" style="background:linear-gradient(135deg,${theme.colors})">
+                  ${icon('windows')}
+                </div>
+                ${escapeHTML(theme.name)}
+              </button>`).join('')}
+          </div>
+          <div class="settings-row">
+            <label for="${state.id}-icon-size">Desktop icon size</label>
+            <select id="${state.id}-icon-size">
+              ${['large', 'medium', 'small'].map(size =>
+                `<option value="${size}" ${prefs.size === size ? 'selected' : ''}>${size[0].toUpperCase() + size.slice(1)} icons</option>`
+              ).join('')}
+            </select>
+          </div>
+          <div class="settings-row">
+            <span>Desktop icon arrangement</span>
+            <button class="standard-button" data-arrange>Sort by name</button>
+          </div>
+          <p style="font-size:11px">Wallpaper is rendered locally as vector artwork.
+          Preferences are saved in this browser when local storage is available.</p>
+        </div>`;
+      $$('[data-theme-choice]', state.body).forEach(button =>
+        button.addEventListener('click', () => applyTheme(button.dataset.themeChoice)));
+      $('select', state.body).addEventListener('change', event => {
+        Desktop.setSize(event.target.value);
+        document.dispatchEvent(new CustomEvent('preferenceschange'));
+      });
+      $('[data-arrange]', state.body).addEventListener('click', () => {
+        Desktop.sort('name');
+        toast('Desktop icons sorted by name.');
+      });
+    }
+    document.addEventListener('preferenceschange', render);
+    state.onCleanup(() => document.removeEventListener('preferenceschange', render));
+    render();
+    return state;
+  }
+
+  /* ---------- App registry and Start menu ---------- */
+  const programs = [
+    { id: 'notepad', name: 'Notepad', icon: 'notepad', keywords: 'text editor document write', pinned: true },
+    { id: 'calculator', name: 'Calculator', icon: 'calculator', keywords: 'math numbers arithmetic', pinned: true },
+    { id: 'browser', name: 'Internet Explorer', icon: 'browser', keywords: 'internet browser search web', pinned: true },
+    { id: 'explorer', name: 'Windows Explorer', icon: 'folder', keywords: 'files folders computer', pinned: true },
+    { id: 'personalize', name: 'Personalization', icon: 'settings', keywords: 'control panel settings wallpaper theme', pinned: false },
+    { id: 'help', name: 'Help and Support', icon: 'computer', keywords: 'help support guide shortcuts', pinned: false }
+  ];
+
+  const appFactories = {
+    explorer: createExplorer,
+    notepad: createNotepad,
+    calculator: createCalculator,
+    browser: createBrowser,
+    personalize: createPersonalization,
+    help: () => createNotepad({ text: welcomeText, title: 'Windows Help' })
+  };
+
+  function launch(id, options = {}) {
+    hidePopups();
+    const factory = appFactories[id];
+    return factory ? factory(options) : null;
+  }
+
+  let allPrograms = false;
+
+  function setStartOpen(open) {
+    const menu = $('#start-menu');
+    if (open) {
+      $('#context-menu').hidden = true;
+      $('#calendar').hidden = true;
+    }
+    menu.hidden = !open;
+    $('#start-button').classList.toggle('open', open);
+    $('#start-button').setAttribute('aria-expanded', String(open));
+    if (open) {
+      allPrograms = false;
+      $('#start-search').value = '';
+      renderStartPrograms();
+      $('#start-search').focus();
+    }
+  }
+
+  function renderStartPrograms() {
+    const container = $('#start-programs');
+    const query = $('#start-search').value.trim().toLowerCase();
+    const matches = programs.filter(program => {
+      if (query) return `${program.name} ${program.keywords}`.toLowerCase().includes(query);
+      return allPrograms || program.pinned;
+    });
+    container.replaceChildren();
+
+    function addProgram(name, iconName, action) {
+      const button = document.createElement('button');
+      button.className = 'program-button';
+      button.innerHTML = `${icon(iconName)}<span>${escapeHTML(name)}</span>`;
+      button.addEventListener('click', action);
+      container.append(button);
+    }
+
+    matches.forEach(program => addProgram(program.name, program.icon, () => launch(program.id)));
+    if (query) {
+      const matchingFiles = files.filter(file =>
+        file.type === 'text' && file.parent !== 'recycle' && file.name.toLowerCase().includes(query)
+      ).slice(0, 12);
+      if (matchingFiles.length) {
+        const heading = document.createElement('div');
+        heading.className = 'sidebar-heading';
+        heading.textContent = 'Files';
+        container.append(heading);
+        matchingFiles.forEach(file => addProgram(file.name, 'text', () => {
+          hidePopups();
+          openFile(file.id);
+        }));
+      }
+    }
+    if (!container.children.length) container.innerHTML = '<div class="start-empty">No matching programs or files.</div>';
+    $('#all-programs').textContent = allPrograms ? '◂   Back' : '▸   All Programs';
+  }
+
+  $('#start-button').addEventListener('click', () => setStartOpen($('#start-menu').hidden));
+  $('#all-programs').addEventListener('click', () => {
+    allPrograms = !allPrograms;
+    $('#start-search').value = '';
+    renderStartPrograms();
+  });
+  $('#start-search').addEventListener('input', renderStartPrograms);
+  $('#start-search').addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      $('.program-button', $('#start-programs'))?.click();
+    }
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      $('.program-button', $('#start-programs'))?.focus();
+    }
+  });
+  $$('[data-location]', $('#start-menu')).forEach(button =>
+    button.addEventListener('click', () => launch('explorer', { location: button.dataset.location })));
+  $$('[data-launch]', $('#start-menu')).forEach(button =>
+    button.addEventListener('click', () => launch(button.dataset.launch)));
+
+  /* ---------- Clock and calendar ---------- */
+  function updateClock() {
+    const now = new Date();
+    const time = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    const date = now.toLocaleDateString([], { month: 'numeric', day: 'numeric', year: 'numeric' });
+    $('#clock').innerHTML = `${escapeHTML(time)}<br>${escapeHTML(date)}`;
+    $('#clock').title = now.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    $('#clock').setAttribute('aria-label', `${time}, ${$('#clock').title}`);
+    if (!$('#calendar').hidden) renderCalendar();
+  }
+
+  function renderCalendar() {
+    const now = new Date();
+    const first = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+    const days = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    let cells = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
+      .map(day => `<span class="day-name">${day}</span>`).join('');
+    cells += '<span></span>'.repeat(first);
+    for (let day = 1; day <= days; day++) {
+      cells += `<span class="${day === now.getDate() ? 'today' : ''}">${day}</span>`;
+    }
+    $('#calendar').innerHTML = `
+      <h2>${escapeHTML(now.toLocaleDateString([], { month: 'long', year: 'numeric' }))}</h2>
+      <div class="calendar-grid">${cells}</div>
+      <div class="calendar-footer">${escapeHTML(now.toLocaleTimeString())}<br>Local system time</div>`;
+  }
+
+  $('#clock').addEventListener('click', () => {
+    const open = $('#calendar').hidden;
+    hidePopups();
+    if (open) {
+      renderCalendar();
+      $('#calendar').hidden = false;
+    }
+  });
+  $('#show-desktop').addEventListener('click', () => {
+    hidePopups();
+    WindowManager.showDesktop();
+  });
+
+  /* ---------- Shutdown and global interaction ---------- */
+  $('#shutdown').addEventListener('click', () => {
+    const dirtyWindows = [...WindowManager.windows.values()].filter(state => state.dirty);
+    if (dirtyWindows.length && !confirm(
+      `${dirtyWindows.length} document(s) have unsaved changes. Shut down and discard those changes?`
+    )) return;
+
+    hidePopups();
+    savePrefs();
+    [...WindowManager.windows.keys()].forEach(id => WindowManager.close(id, true));
+    WindowManager.desktopSnapshot = null;
+    $('#power-screen').hidden = false;
+    $('#restart').focus();
+  });
+
+  $('#restart').addEventListener('click', () => {
+    $('#power-screen').hidden = true;
+    Desktop.element.focus();
+    toast('Welcome back.');
+  });
+
+  document.addEventListener('pointerdown', event => {
+    if (!event.target.closest('#context-menu')) $('#context-menu').hidden = true;
+    if (!event.target.closest('#start-menu, #start-button')) setStartOpen(false);
+    if (!event.target.closest('#calendar, #clock')) $('#calendar').hidden = true;
+  });
+
+  document.addEventListener('keydown', event => {
+    if (!$('#power-screen').hidden) return;
+    const target = event.target;
+    const editing = target instanceof Element && target.matches('input, textarea, select, [contenteditable="true"]');
+
+    if (event.ctrlKey && event.key === 'Escape') {
+      event.preventDefault();
+      setStartOpen($('#start-menu').hidden);
+      return;
+    }
+    if (event.key === 'Escape') {
+      hidePopups();
+      return;
+    }
+    if (event.altKey && event.key === 'F4' && WindowManager.active) {
+      event.preventDefault();
+      WindowManager.close(WindowManager.active);
+      return;
+    }
+    if (event.key === 'F5') {
+      event.preventDefault();
+      Desktop.refresh();
+      return;
+    }
+
+    const desktopFocused = Desktop.element.contains(document.activeElement) ||
+      document.activeElement === document.body;
+    if (!editing && desktopFocused) {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a') {
+        event.preventDefault();
+        Desktop.selected = new Set(children('desktop').map(file => file.id));
+        Desktop.paintSelection();
+      } else if (event.key === 'Delete') {
+        event.preventDefault();
+        Desktop.deleteSelected();
+      } else if (event.key === 'F2' && Desktop.selected.size === 1) {
+        event.preventDefault();
+        Desktop.rename([...Desktop.selected][0]);
+      } else if (event.key === 'Enter' && target === Desktop.element) {
+        event.preventDefault();
+        [...Desktop.selected].forEach(openFile);
+      }
+    }
+  });
+
+  window.addEventListener('beforeunload', event => {
+    savePrefs();
+    if ([...WindowManager.windows.values()].some(state => state.dirty)) {
+      event.preventDefault();
+      event.returnValue = '';
+    }
+  });
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      WindowManager.windows.forEach(state => {
+        WindowManager.constrain(state);
+        WindowManager.layout(state);
+      });
+      Desktop.render();
+      hidePopups();
+    }, 80);
+  });
+
+  /* ---------- Boot ---------- */
+  document.body.dataset.theme = prefs.theme;
+  Desktop.init();
+  renderStartPrograms();
+  updateClock();
+  setInterval(updateClock, 1000);
+  Desktop.element.focus();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,948 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Windows 11</title>
+<style>
+  :root {
+    --accent: #0067c0;
+    --panel: rgba(249, 249, 249, .96);
+    --taskbar: rgba(243, 243, 243, .87);
+    --text: #202020;
+    --muted: #666;
+    --line: #e4e4e4;
+    --hover: rgba(0, 0, 0, .055);
+    --shadow: 0 16px 48px rgba(0, 0, 0, .24), 0 2px 8px rgba(0, 0, 0, .12);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+  body { font: 14px "Segoe UI Variable", "Segoe UI", Arial, sans-serif; color: var(--text); user-select: none; }
+  button, input, textarea { font: inherit; }
+  button { cursor: pointer; }
+  svg { display: block; }
+  .hidden { display: none !important; }
+
+  /* A local approximation remains visible if the online wallpaper cannot load. */
+  #desktop {
+    position: absolute; inset: 0;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 58% 56%, #538bdc 0%, #254dba 23%, #102974 52%, #061848 78%, #09143a 100%);
+  }
+  #fallback-wallpaper { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #wallpaper {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; opacity: 0; transition: opacity .25s;
+    pointer-events: none;
+  }
+  #wallpaper.loaded { opacity: 1; }
+
+  .desktop-icons { position: absolute; top: 18px; left: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .desktop-icon {
+    width: 80px; height: 91px; padding: 8px 3px 5px; border: 1px solid transparent;
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    color: white; text-align: center; font-size: 12px; line-height: 16px;
+    text-shadow: 1px 1px 3px #0009;
+    border-radius: 4px;
+  }
+  .desktop-icon:hover, .desktop-icon.selected { background: #ffffff28; border-color: #ffffff35; }
+  .desktop-icon .app-icon { width: 38px; height: 38px; flex: none; }
+
+  .app-icon { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+  .app-icon svg { width: 100%; height: 100%; }
+  .win-logo { width: 23px; height: 23px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; }
+  .win-logo i { background: #0078d4; }
+  .win-logo.white i { background: white; }
+
+  /* Taskbar */
+  #taskbar {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 48px; z-index: 1000;
+    display: flex; justify-content: center; align-items: center;
+    background: var(--taskbar); backdrop-filter: blur(35px) saturate(1.3);
+    border-top: 1px solid #ffffff82;
+  }
+  .task-center { display: flex; align-items: center; gap: 3px; height: 100%; }
+  .task-button {
+    width: 48px; height: 42px; position: relative; border: 0; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center; background: transparent;
+  }
+  .task-button:hover, .task-button.active { background: #ffffff9e; }
+  .task-button.running::after {
+    content: ""; position: absolute; width: 6px; height: 3px; border-radius: 3px;
+    background: #777; bottom: 2px; transition: width .15s;
+  }
+  .task-button.running.focused::after { width: 16px; background: var(--accent); }
+  .task-button .app-icon { width: 25px; height: 25px; }
+  .task-button .win-logo { width: 23px; height: 23px; }
+  .task-right {
+    position: absolute; right: 0; height: 100%; display: flex; align-items: center;
+    gap: 2px; padding-right: 5px;
+  }
+  .tray-button {
+    height: 40px; border: 0; background: transparent; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center; gap: 7px; padding: 0 7px;
+  }
+  .tray-button:hover { background: #ffffff9e; }
+  .tray-button svg { width: 17px; height: 17px; }
+  .clock { text-align: right; line-height: 16px; font-size: 12px; min-width: 77px; padding: 0 5px; }
+  .show-desktop { height: 32px; width: 5px; margin-left: 2px; border-left: 1px solid #bbb; cursor: pointer; }
+
+  /* Menus and flyouts */
+  .flyout {
+    position: absolute; z-index: 900; background: var(--panel);
+    backdrop-filter: blur(35px) saturate(1.4); border: 1px solid #ffffffaf;
+    border-radius: 8px; box-shadow: var(--shadow);
+  }
+  #start-menu {
+    bottom: 60px; left: 50%; transform: translateX(-50%);
+    width: 640px; height: 675px; max-height: calc(100vh - 75px);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .start-main { padding: 32px 36px 0; flex: 1; overflow: auto; }
+  .start-search {
+    height: 33px; width: 100%; border: 0; border-bottom: 2px solid var(--accent);
+    border-radius: 5px; background: #fff; padding: 0 12px;
+    display: flex; align-items: center; gap: 12px; color: #666; text-align: left;
+    box-shadow: 0 1px 3px #0001;
+  }
+  .section-heading { display: flex; align-items: center; justify-content: space-between; margin: 27px 0 15px; padding: 0 2px; }
+  .section-heading strong { font-size: 14px; }
+  .small-button { background: #ffffffb8; border: 1px solid #e6e6e6; border-radius: 5px; padding: 5px 10px; font-size: 12px; }
+  .small-button:hover { background: white; }
+  .pinned-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 9px 2px; }
+  .pinned-app {
+    height: 80px; border: 0; border-radius: 5px; background: transparent;
+    display: flex; align-items: center; justify-content: flex-start; flex-direction: column;
+    padding: 10px 2px 2px; gap: 7px; font-size: 12px; white-space: nowrap;
+  }
+  .pinned-app:hover, .recommend-item:hover { background: #ffffffb8; }
+  .pinned-app .app-icon { width: 32px; height: 32px; }
+  .recommended { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 12px; }
+  .recommend-item {
+    height: 62px; background: transparent; border: 0; border-radius: 5px;
+    display: flex; align-items: center; text-align: left; gap: 13px; padding: 7px 9px;
+  }
+  .recommend-item .app-icon { width: 30px; height: 30px; }
+  .recommend-item small { display: block; color: var(--muted); margin-top: 4px; font-size: 11px; }
+  .start-footer {
+    height: 65px; flex: none; border-top: 1px solid #ffffff9b; background: #e9e9e993;
+    display: flex; align-items: center; justify-content: space-between; padding: 0 45px;
+  }
+  .user-button, .power-button { border: 0; background: transparent; border-radius: 5px; display: flex; align-items: center; gap: 10px; padding: 8px; }
+  .user-button:hover, .power-button:hover { background: #ffffff9c; }
+  .avatar { width: 29px; height: 29px; background: #b0cee8; border-radius: 50%; display: grid; place-items: center; color: white; font-size: 18px; }
+  .power-button svg { width: 19px; height: 19px; }
+
+  #search-panel { bottom: 60px; left: 50%; transform: translateX(-50%); width: 640px; height: 540px; max-height: calc(100vh - 75px); padding: 26px 32px; }
+  #search-input { width: 100%; height: 42px; background: #fff; border: 0; border-bottom: 2px solid var(--accent); border-radius: 5px; outline: 0; padding: 0 14px; }
+  .search-categories { display: flex; gap: 7px; margin: 20px 0; }
+  .search-categories span { padding: 6px 13px; border-radius: 16px; background: #ffffffaa; font-size: 12px; }
+  .search-result {
+    width: 100%; border: 0; background: transparent; border-radius: 5px;
+    display: flex; align-items: center; gap: 13px; padding: 10px; text-align: left;
+  }
+  .search-result:hover { background: white; }
+  .search-result .app-icon { width: 28px; height: 28px; }
+  #quick-panel { right: 15px; bottom: 60px; width: 360px; padding: 23px 25px 18px; }
+  .quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px 15px; }
+  .quick-item { text-align: center; font-size: 12px; }
+  .quick-toggle {
+    width: 100%; height: 48px; border: 1px solid #ddd; background: #fff;
+    border-radius: 5px; display: grid; place-items: center; margin-bottom: 8px;
+  }
+  .quick-toggle.on { background: var(--accent); color: white; border-color: var(--accent); }
+  .quick-toggle svg { width: 21px; height: 21px; }
+  .slider-row { display: flex; align-items: center; gap: 17px; margin-top: 25px; }
+  .slider-row svg { width: 19px; height: 19px; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+  .quick-footer { margin: 21px -25px -18px; padding: 12px 22px; border-top: 1px solid #ddd; display: flex; justify-content: flex-end; background: #e9e9e97d; }
+  #calendar-panel { right: 15px; bottom: 60px; width: 355px; overflow: hidden; }
+  .calendar-top { padding: 19px 22px; border-bottom: 1px solid #ddd; font-size: 13px; }
+  .calendar-body { padding: 17px 22px 22px; }
+  .calendar-heading { font-weight: 600; margin-bottom: 20px; display: flex; justify-content: space-between; }
+  .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; gap: 7px 0; font-size: 12px; }
+  .calendar-grid span { height: 32px; display: grid; place-items: center; }
+  .calendar-grid .today { border-radius: 50%; background: var(--accent); color: white; }
+  .calendar-grid .dim { color: #aaa; }
+  #context-menu { z-index: 1200; width: 225px; padding: 6px; }
+  .context-item { width: 100%; height: 35px; border: 0; background: transparent; border-radius: 4px; display: flex; align-items: center; gap: 13px; padding: 0 10px; text-align: left; font-size: 13px; }
+  .context-item:hover { background: #e8e8e8; }
+  .context-item svg { width: 17px; height: 17px; }
+  .context-separator { height: 1px; background: #ddd; margin: 5px; }
+  .power-pop { position: absolute; bottom: 57px; right: 30px; width: 180px; background: #fafafa; border: 1px solid #ddd; box-shadow: var(--shadow); border-radius: 6px; padding: 5px; }
+
+  /* App windows */
+  #windows { position: absolute; inset: 0 0 48px; pointer-events: none; }
+  .window {
+    position: absolute; width: 880px; height: 570px; min-width: 340px; min-height: 260px;
+    display: flex; flex-direction: column; overflow: hidden; pointer-events: auto;
+    background: #fff; border: 1px solid #d8d8d8; border-radius: 9px;
+    box-shadow: 0 18px 48px #0005, 0 2px 12px #0002;
+  }
+  .window.inactive { box-shadow: 0 7px 24px #0003; }
+  .window.maximized { left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; border-radius: 0; }
+  .titlebar {
+    height: 42px; flex: none; display: flex; align-items: center;
+    background: #f3f3f3; cursor: default;
+  }
+  .window-title { display: flex; align-items: center; gap: 10px; padding: 0 15px; font-size: 12px; flex: 1; white-space: nowrap; overflow: hidden; }
+  .window-title .app-icon { width: 17px; height: 17px; }
+  .window-actions { display: flex; align-self: stretch; }
+  .window-action { width: 46px; border: 0; background: transparent; display: grid; place-items: center; }
+  .window-action:hover { background: #e4e4e4; }
+  .window-action.close:hover { background: #e81123; color: #fff; }
+  .window-action svg { width: 12px; height: 12px; }
+  .window-content { min-height: 0; flex: 1; display: flex; flex-direction: column; overflow: auto; }
+  .resize-grip { position: absolute; right: 0; bottom: 0; width: 13px; height: 13px; cursor: nwse-resize; }
+  .maximized .resize-grip { display: none; }
+
+  /* Explorer */
+  .explorer-toolbar { height: 52px; flex: none; display: flex; align-items: center; gap: 5px; padding: 0 15px; background: #fff; border-bottom: 1px solid #eee; }
+  .toolbar-button { height: 32px; min-width: 32px; background: transparent; border: 0; border-radius: 4px; display: grid; place-items: center; padding: 0 8px; }
+  .toolbar-button:hover { background: #eee; }
+  .toolbar-button svg { width: 18px; height: 18px; }
+  .explorer-address { flex: 1; height: 34px; border: 1px solid #e4e4e4; border-bottom-color: #bbb; display: flex; align-items: center; gap: 8px; padding: 0 10px; margin-left: 6px; min-width: 60px; font-size: 13px; }
+  .explorer-search { width: 195px; height: 34px; border: 1px solid #e4e4e4; border-bottom-color: #bbb; padding: 0 10px; outline-color: var(--accent); }
+  .command-bar { height: 45px; flex: none; display: flex; align-items: center; gap: 5px; padding: 0 16px; border-bottom: 1px solid #eee; }
+  .command-bar button { background: transparent; border: 0; padding: 8px 11px; border-radius: 4px; display: flex; align-items: center; gap: 7px; font-size: 12px; }
+  .command-bar button:hover { background: #eee; }
+  .command-bar svg { width: 17px; height: 17px; }
+  .explorer-layout { flex: 1; min-height: 0; display: flex; }
+  .explorer-sidebar { width: 205px; flex: none; border-right: 1px solid #eee; overflow: auto; padding: 13px 9px; }
+  .sidebar-item { height: 34px; width: 100%; display: flex; align-items: center; gap: 10px; border: 0; border-radius: 4px; background: transparent; padding: 0 12px; text-align: left; font-size: 13px; }
+  .sidebar-item:hover { background: #f2f2f2; }
+  .sidebar-item.active { background: #e8f2fb; }
+  .sidebar-item .app-icon { width: 18px; height: 18px; }
+  .explorer-main { flex: 1; overflow: auto; padding: 22px 24px; }
+  .explorer-section { font-size: 13px; font-weight: 600; padding-bottom: 12px; border-bottom: 1px solid #e9e9e9; }
+  .folder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 8px; padding: 15px 0 25px; }
+  .folder-tile { height: 62px; border: 1px solid transparent; border-radius: 4px; background: transparent; display: flex; align-items: center; gap: 11px; text-align: left; padding: 8px; }
+  .folder-tile:hover { background: #f1f6fb; }
+  .folder-tile.selected { background: #e5f1fb; border-color: #b2d5f1; }
+  .folder-tile .app-icon { width: 35px; height: 35px; }
+  .folder-tile small { display: block; color: #777; margin-top: 3px; }
+  .file-row { width: 100%; border: 0; background: transparent; display: flex; align-items: center; gap: 12px; padding: 9px 11px; text-align: left; border-radius: 4px; }
+  .file-row:hover { background: #f1f6fb; }
+  .file-row .app-icon { width: 25px; height: 25px; }
+  .file-row small { margin-left: auto; color: #777; }
+  .explorer-status { height: 25px; flex: none; border-top: 1px solid #eee; font-size: 11px; padding: 5px 15px; color: #777; }
+
+  /* Settings */
+  .settings-layout { display: flex; flex: 1; min-height: 0; background: #f8f8f8; }
+  .settings-sidebar { width: 250px; flex: none; padding: 27px 13px; overflow: auto; }
+  .settings-profile { display: flex; align-items: center; gap: 10px; padding: 4px 12px 22px; }
+  .settings-profile .avatar { width: 43px; height: 43px; font-size: 26px; }
+  .settings-profile small { display: block; font-size: 11px; color: #777; }
+  .settings-search { width: 100%; padding: 8px; border: 1px solid #ddd; border-bottom: 2px solid var(--accent); border-radius: 4px; margin-bottom: 14px; outline: 0; }
+  .settings-main { flex: 1; overflow: auto; padding: 35px; }
+  .settings-main h1 { font-size: 27px; font-weight: 600; margin: 0 0 22px; }
+  .settings-main h2 { font-size: 17px; margin: 28px 0 13px; }
+  .settings-card { width: 100%; border: 1px solid #e7e7e7; border-radius: 5px; background: white; min-height: 66px; margin: 5px 0; padding: 13px 17px; display: flex; align-items: center; gap: 16px; text-align: left; }
+  .settings-card:hover { background: #fdfdfd; border-color: #ccc; }
+  .settings-card .app-icon { width: 24px; height: 24px; }
+  .settings-card small { display: block; color: #777; margin-top: 4px; font-size: 12px; }
+  .settings-card .chevron { margin-left: auto; font-size: 20px; color: #666; }
+  .setting-select { margin-left: auto; border: 1px solid #ccc; border-bottom-color: #777; background: #fff; border-radius: 4px; padding: 6px 10px; }
+  .color-swatch { width: 27px; height: 27px; border: 2px solid white; outline: 1px solid #aaa; border-radius: 4px; cursor: pointer; }
+
+  /* Other apps */
+  .notepad-menu { height: 40px; flex: none; display: flex; align-items: center; gap: 5px; background: #fff; padding: 0 13px; border-bottom: 1px solid #eee; }
+  .notepad-menu button { border: 0; background: transparent; border-radius: 4px; padding: 7px 12px; }
+  .notepad-menu button:hover { background: #eee; }
+  .notepad-text { flex: 1; resize: none; border: 0; outline: 0; padding: 15px; font: 14px/1.5 Consolas, monospace; user-select: text; }
+  .notepad-status { border-top: 1px solid #eee; height: 26px; padding: 5px 15px; font-size: 11px; color: #666; text-align: right; }
+  .calc { background: #f3f3f3; flex: 1; display: flex; flex-direction: column; padding: 14px; }
+  .calc-mode { font-size: 18px; font-weight: 600; padding: 8px 4px; }
+  .calc-expression { height: 30px; text-align: right; color: #777; padding: 8px 7px; }
+  .calc-display { height: 73px; text-align: right; font-size: 42px; font-weight: 600; padding: 3px 6px; overflow: hidden; }
+  .calc-keys { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(6, 1fr); gap: 3px; }
+  .calc-keys button { border: 1px solid #e8e8e8; background: white; border-radius: 4px; font-size: 19px; }
+  .calc-keys button:hover { background: #f9f9f9; }
+  .calc-keys .operator { background: #fafafa; }
+  .calc-keys .equals { background: var(--accent); color: white; }
+  .browser-bar { height: 51px; display: flex; align-items: center; gap: 10px; padding: 0 13px; background: #f5f5f5; }
+  .browser-bar button { border: 0; background: transparent; padding: 6px; border-radius: 4px; }
+  .browser-bar button:hover { background: #e6e6e6; }
+  .browser-address { flex: 1; border-radius: 20px; border: 1px solid #ddd; background: #fff; padding: 8px 16px; outline-color: var(--accent); }
+  .browser-home { flex: 1; background: linear-gradient(135deg, #d8eefc, #f6f9ff 48%, #dce8f9); text-align: center; padding: 90px 22px 20px; overflow: auto; }
+  .browser-home h1 { font-size: 31px; font-weight: 500; }
+  .browser-home input { width: min(530px, 90%); padding: 14px 19px; border-radius: 25px; border: 1px solid #ddd; box-shadow: 0 3px 12px #0001; outline-color: var(--accent); user-select: text; }
+  .browser-frame { flex: 1; width: 100%; border: 0; }
+
+  @media (max-width: 690px) {
+    #start-menu, #search-panel { width: calc(100vw - 16px); }
+    #start-menu { height: min(675px, calc(100vh - 65px)); }
+    .start-main { padding: 23px 20px 0; }
+    .pinned-grid { grid-template-columns: repeat(4, 1fr); }
+    .task-button { width: 40px; }
+    .task-center { transform: translateX(-25px); }
+    .task-right .tray-button:first-child { display: none; }
+    .window:not(.maximized) { max-width: calc(100vw - 12px); }
+    .explorer-sidebar { width: 155px; }
+    .explorer-search { display: none; }
+    .settings-sidebar { width: 170px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Icons, kept inside this file. -->
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden">
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8" fill="none" stroke="currentColor" stroke-width="2"/><path d="m16 16 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-task" viewBox="0 0 24 24"><rect x="2" y="4" width="8" height="8" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="13" y="4" width="9" height="16" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M2 16h8M2 20h8" stroke="currentColor" stroke-width="1.7"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 48 48"><path d="M4 12a3 3 0 0 1 3-3h12l4 5h18a3 3 0 0 1 3 3v5H4z" fill="#eeb72c"/><path d="M5 18h39a2 2 0 0 1 2 2l-4 21a3 3 0 0 1-3 2H7a3 3 0 0 1-3-3V21a3 3 0 0 1 1-3z" fill="#ffd75a"/><path d="M5 21h40l-3 18H4z" fill="#f9c943"/></symbol>
+  <symbol id="i-edge" viewBox="0 0 48 48"><defs><linearGradient id="edge-a" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#25c5ba"/><stop offset=".5" stop-color="#0d93ca"/><stop offset="1" stop-color="#1955cb"/></linearGradient></defs><path d="M44 29c0 11-9 17-20 17C13 46 4 39 4 27 4 14 13 3 25 3c10 0 18 7 19 17-3-6-10-9-17-8-8 1-14 7-15 15 5-5 11-7 18-5 5 1 8 5 14 7z" fill="url(#edge-a)"/><path d="M44 29c-4 7-11 10-20 9-7-1-11-5-12-11 6-6 15-7 22-2 3 2 6 4 10 4z" fill="#087ac4"/><path d="M44 29c-5 4-12 5-18 3-5-2-10-3-14-5 2 10 11 16 22 15 6-2 10-7 10-13z" fill="#22a7c5"/></symbol>
+  <symbol id="i-store" viewBox="0 0 48 48"><rect x="6" y="13" width="36" height="31" rx="3" fill="#eee"/><rect x="9" y="18" width="30" height="23" rx="1" fill="#fff"/><path d="M17 16v-5a7 7 0 0 1 14 0v5" fill="none" stroke="#777" stroke-width="3"/><rect x="16" y="23" width="7" height="7" fill="#f25022"/><rect x="25" y="23" width="7" height="7" fill="#7fba00"/><rect x="16" y="32" width="7" height="7" fill="#00a4ef"/><rect x="25" y="32" width="7" height="7" fill="#ffb900"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 48 48"><path d="M20 3h8l1.3 5.5a17 17 0 0 1 4.4 2.5L39 9l5 7-3.6 4.3a16 16 0 0 1 0 5.4L44 30l-5 7-5.3-2a17 17 0 0 1-4.4 2.5L28 43h-8l-1.3-5.5a17 17 0 0 1-4.4-2.5L9 37l-5-7 3.6-4.3a16 16 0 0 1 0-5.4L4 16l5-7 5.3 2a17 17 0 0 1 4.4-2.5z" fill="#858b90"/><circle cx="24" cy="23" r="9" fill="#e5e9eb"/><circle cx="24" cy="23" r="5.5" fill="#858b90"/></symbol>
+  <symbol id="i-notepad" viewBox="0 0 48 48"><rect x="9" y="5" width="31" height="39" rx="3" fill="#76c6df"/><path d="M9 10h31v32a2 2 0 0 1-2 2H12a3 3 0 0 1-3-3z" fill="#fff"/><path d="M16 20h17M16 26h17M16 32h13" stroke="#7ca8bc" stroke-width="2"/><path d="M16 4v8m8-8v8m8-8v8" stroke="#4788ab" stroke-width="3" stroke-linecap="round"/></symbol>
+  <symbol id="i-calc" viewBox="0 0 48 48"><rect x="9" y="3" width="30" height="42" rx="4" fill="#d6dbe1"/><rect x="13" y="8" width="22" height="11" rx="1" fill="#fff"/><path d="M16 24h4m7 0h5M16 30h4m7 0h5M16 36h4m7 0h5" stroke="#555" stroke-width="3" stroke-linecap="round"/></symbol>
+  <symbol id="i-bin" viewBox="0 0 48 48"><path d="M14 11h20l-2 32H16z" fill="#d9ecf5" stroke="#82b4d2" stroke-width="2"/><path d="M11 10h26v4H11z" fill="#f4f8fa" stroke="#83a9bd" stroke-width="1.5"/><path d="M19 8V5h10v3" fill="none" stroke="#83a9bd" stroke-width="2"/><path d="m20 23 4-4 3 3m-3-3-1 5m1-5 5 1M20 29l2 4 4-1m-4 1 4 2m0-3 2-5" fill="none" stroke="#56a1d0" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-pc" viewBox="0 0 48 48"><rect x="5" y="7" width="38" height="28" rx="2" fill="#353f4c"/><rect x="8" y="10" width="32" height="22" fill="#63a9db"/><path d="M20 35h8v5H20zm-7 5h22v3H13z" fill="#aab3bd"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 48 48"><path d="M10 3h19l9 9v32H10z" fill="#f5f5f5" stroke="#b5b5b5"/><path d="M29 3v10h9" fill="#ddd"/><path d="M16 22h16m-16 6h16m-16 6h13" stroke="#8b9bad" stroke-width="2"/></symbol>
+  <symbol id="i-photo" viewBox="0 0 48 48"><rect x="5" y="7" width="38" height="34" rx="4" fill="#73bbdb"/><circle cx="32" cy="17" r="5" fill="#ffdc70"/><path d="m7 35 11-13 8 9 6-6 10 10v4H7z" fill="#4d9d76"/></symbol>
+  <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M2 8a16 16 0 0 1 20 0M5 12a11 11 0 0 1 14 0m-11 4a6 6 0 0 1 8 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="20" r="1.5" fill="currentColor"/></symbol>
+  <symbol id="i-volume" viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9zM16 8a6 6 0 0 1 0 8m2-11a10 10 0 0 1 0 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-battery" viewBox="0 0 24 24"><rect x="2" y="6" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M22 10v4M5 9h12v6H5z" fill="currentColor" stroke="currentColor" stroke-linecap="round"/></symbol>
+  <symbol id="i-power" viewBox="0 0 24 24"><path d="M12 2v10m-5-7a9 9 0 1 0 10 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m8 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="m11 5-7 7 7 7M4 12h17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2 6M20 4v7h-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 1v3m0 16v3M1 12h3m16 0h3M4 4l2 2m12 12 2 2M20 4l-2 2M6 18l-2 2" stroke="currentColor" stroke-width="1.6"/></symbol>
+  <symbol id="i-bluetooth" viewBox="0 0 24 24"><path d="M7 6 17 17l-5 4V3l5 4L7 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-airplane" viewBox="0 0 24 24"><path d="m2 13 8-2 6-8c1-1 3-1 3 1l-4 9 6 3v3l-8-1-4 4-2-1 2-6-7 1z" fill="currentColor"/></symbol>
+</svg>
+
+<div id="desktop">
+  <svg id="fallback-wallpaper" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="silk1" x1=".12" y1=".05" x2=".86" y2=".95"><stop stop-color="#bddcff"/><stop offset=".25" stop-color="#589dea"/><stop offset=".57" stop-color="#1955bd"/><stop offset="1" stop-color="#081c75"/></linearGradient>
+      <linearGradient id="silk2" x1=".18" y1=".12" x2=".82" y2=".91"><stop stop-color="#f1f9ff"/><stop offset=".27" stop-color="#96c4fa"/><stop offset=".63" stop-color="#316bd0"/><stop offset="1" stop-color="#15338d"/></linearGradient>
+      <linearGradient id="silk3" x1=".2" y1=".1" x2=".8" y2=".9"><stop stop-color="#d9ecff"/><stop offset=".45" stop-color="#6ca6ef"/><stop offset="1" stop-color="#21459f"/></linearGradient>
+      <filter id="blur"><feGaussianBlur stdDeviation="19"/></filter>
+    </defs>
+    <ellipse cx="925" cy="450" rx="405" ry="300" fill="#71afff" opacity=".35" filter="url(#blur)"/>
+    <path d="M690 0C507 52 390 150 419 286c21 100 129 156 297 161 166 6 290-86 371-166 81-81 168-109 246-70 92 45 93 172 25 280-108 171-328 348-505 409h394c248-126 406-309 381-494-24-181-175-306-344-263-87 22-154 89-246 152-114 79-233 64-312 15-76-48-65-135 17-198C799 72 884 29 986 0z" fill="url(#silk1)" opacity=".95"/>
+    <path d="M844-65C606 20 493 126 494 248c2 125 124 182 292 172 161-10 255-93 346-153 86-57 179-56 225 8 58 81-1 185-86 269-96 96-249 193-366 356h221c131-130 292-258 361-405 77-165 22-319-126-352-104-24-207 16-303 99-83 71-179 120-283 96-78-18-113-78-68-141 43-60 130-114 268-197z" fill="url(#silk2)"/>
+    <path d="M900-50C698 17 598 111 603 218c5 96 103 150 230 135 105-13 175-73 256-131 111-80 213-88 276-15 79 91 38 218-59 319-124 128-268 211-358 374H772c78-155 241-288 379-407 98-85 140-153 104-206-34-51-99-32-175 24-100 75-194 139-315 107-120-32-182-115-132-215 47-93 138-156 267-253z" fill="url(#silk3)" opacity=".91"/>
+    <path d="M1115-45c-138 78-254 165-287 263-29 86 22 146 116 147 85 1 170-59 257-99 78-36 145-20 162 42 28 105-98 220-230 331-79 67-147 148-191 261h-98c39-138 123-251 249-357 107-91 195-172 176-221-20-53-81-38-167 21-135 93-258 102-327 22-86-98-18-260 106-410z" fill="#8abaff" opacity=".5"/>
+  </svg>
+  <img id="wallpaper" alt="" referrerpolicy="no-referrer">
+  <div class="desktop-icons">
+    <div class="desktop-icon" data-open="bin" tabindex="0"><span class="app-icon"><svg><use href="#i-bin"/></svg></span><span>Recycle Bin</span></div>
+    <div class="desktop-icon" data-open="edge" tabindex="0"><span class="app-icon"><svg><use href="#i-edge"/></svg></span><span>Microsoft Edge</span></div>
+    <div class="desktop-icon" data-open="explorer" tabindex="0"><span class="app-icon"><svg><use href="#i-pc"/></svg></span><span>This PC</span></div>
+  </div>
+</div>
+
+<div id="windows"></div>
+
+<div id="start-menu" class="flyout hidden">
+  <div class="start-main">
+    <button class="start-search" id="start-search"><svg width="17" height="17"><use href="#i-search"/></svg> Search for apps, settings, and documents</button>
+    <div class="section-heading"><strong>Pinned</strong><button class="small-button" id="all-apps">All apps &nbsp;›</button></div>
+    <div class="pinned-grid" id="pinned-grid"></div>
+    <div class="section-heading" style="margin-top:29px"><strong>Recommended</strong><button class="small-button" onclick="openApp('explorer')">More &nbsp;›</button></div>
+    <div class="recommended" id="recommended"></div>
+  </div>
+  <div class="start-footer">
+    <button class="user-button"><span class="avatar">●</span><span>User</span></button>
+    <div style="position:relative">
+      <button class="power-button" id="power-button" title="Power"><svg><use href="#i-power"/></svg></button>
+      <div class="power-pop hidden" id="power-pop">
+        <button class="context-item" onclick="powerAction('Sleep')">☾ &nbsp; Sleep</button>
+        <button class="context-item" onclick="powerAction('Shut down')">⏻ &nbsp; Shut down</button>
+        <button class="context-item" onclick="powerAction('Restart')">↻ &nbsp; Restart</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="search-panel" class="flyout hidden">
+  <input id="search-input" placeholder="Search for apps, settings, and documents" autocomplete="off">
+  <div class="search-categories"><span>All</span><span>Apps</span><span>Documents</span><span>Web</span></div>
+  <strong id="search-heading">Top apps</strong>
+  <div id="search-results" style="margin-top:12px"></div>
+</div>
+
+<div id="quick-panel" class="flyout hidden">
+  <div class="quick-grid">
+    <div class="quick-item"><button class="quick-toggle on" title="Wi-Fi"><svg><use href="#i-wifi"/></svg></button>Wi-Fi</div>
+    <div class="quick-item"><button class="quick-toggle on" title="Bluetooth"><svg><use href="#i-bluetooth"/></svg></button>Bluetooth</div>
+    <div class="quick-item"><button class="quick-toggle" title="Airplane mode"><svg><use href="#i-airplane"/></svg></button>Airplane mode</div>
+    <div class="quick-item"><button class="quick-toggle" title="Battery saver">▰</button>Battery saver</div>
+    <div class="quick-item"><button class="quick-toggle" title="Night light">☾</button>Night light</div>
+    <div class="quick-item"><button class="quick-toggle" title="Accessibility">◉</button>Accessibility</div>
+  </div>
+  <div class="slider-row"><svg><use href="#i-sun"/></svg><input type="range" min="30" max="100" value="100" id="brightness" aria-label="Brightness"></div>
+  <div class="slider-row"><svg><use href="#i-volume"/></svg><input type="range" min="0" max="100" value="75" aria-label="Volume"></div>
+  <div class="quick-footer"><button class="toolbar-button" title="All settings" onclick="openApp('settings');hideFlyouts()"><span class="app-icon" style="width:18px;height:18px"><svg><use href="#i-settings"/></svg></span></button></div>
+</div>
+
+<div id="calendar-panel" class="flyout hidden">
+  <div class="calendar-top" id="calendar-date"></div>
+  <div class="calendar-body"><div class="calendar-heading"><span id="calendar-month"></span><span>⌃ &nbsp;⌄</span></div><div class="calendar-grid" id="calendar-grid"></div></div>
+</div>
+
+<div id="context-menu" class="flyout hidden"></div>
+
+<div id="taskbar">
+  <div class="task-center" id="task-center">
+    <button class="task-button" id="task-start" title="Start"><span class="win-logo"><i></i><i></i><i></i><i></i></span></button>
+    <button class="task-button" id="task-search" title="Search"><span class="app-icon"><svg><use href="#i-search"/></svg></span></button>
+    <button class="task-button" id="task-view" title="Task view"><span class="app-icon"><svg><use href="#i-task"/></svg></span></button>
+    <button class="task-button" data-task="edge" title="Microsoft Edge"><span class="app-icon"><svg><use href="#i-edge"/></svg></span></button>
+    <button class="task-button" data-task="explorer" title="File Explorer"><span class="app-icon"><svg><use href="#i-folder"/></svg></span></button>
+    <button class="task-button" data-task="store" title="Microsoft Store"><span class="app-icon"><svg><use href="#i-store"/></svg></span></button>
+    <button class="task-button hidden" data-task="settings" title="Settings"><span class="app-icon"><svg><use href="#i-settings"/></svg></span></button>
+    <button class="task-button hidden" data-task="notepad" title="Notepad"><span class="app-icon"><svg><use href="#i-notepad"/></svg></span></button>
+    <button class="task-button hidden" data-task="calculator" title="Calculator"><span class="app-icon"><svg><use href="#i-calc"/></svg></span></button>
+    <button class="task-button hidden" data-task="bin" title="Recycle Bin"><span class="app-icon"><svg><use href="#i-bin"/></svg></span></button>
+  </div>
+  <div class="task-right">
+    <button class="tray-button" title="Show hidden icons">⌃</button>
+    <button class="tray-button" id="tray-quick" title="Quick settings">
+      <svg><use href="#i-wifi"/></svg><svg><use href="#i-volume"/></svg><svg><use href="#i-battery"/></svg>
+    </button>
+    <button class="tray-button clock" id="tray-clock" title="Notifications and calendar"><span><span id="clock-time"></span><br><span id="clock-date"></span></span></button>
+    <div class="show-desktop" id="show-desktop" title="Show desktop"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+  const icon = name => `<span class="app-icon"><svg><use href="#i-${name}"/></svg></span>`;
+  const apps = {
+    edge: { title: 'Microsoft Edge', icon: 'edge', width: 1000, height: 660 },
+    explorer: { title: 'File Explorer', icon: 'folder', width: 920, height: 590 },
+    store: { title: 'Microsoft Store', icon: 'store', width: 850, height: 580 },
+    settings: { title: 'Settings', icon: 'settings', width: 970, height: 620 },
+    notepad: { title: 'Notepad', icon: 'notepad', width: 770, height: 530 },
+    calculator: { title: 'Calculator', icon: 'calc', width: 340, height: 530 },
+    bin: { title: 'Recycle Bin', icon: 'bin', width: 850, height: 550 }
+  };
+  const flyouts = ['#start-menu', '#search-panel', '#quick-panel', '#calendar-panel', '#context-menu'];
+  let topZ = 10, focused = null, windowCount = 0;
+  let explorerPath = 'Home', selectedFile = null;
+  let note = localStorage.getItem('win11-note') || '';
+  let theme = localStorage.getItem('win11-theme') || 'Light';
+
+  // Try several public Windows 11 wallpaper mirrors. No external libraries are used.
+  const wallpaperUrls = [
+    'https://wallpaperaccess.com/full/5669100.jpg',
+    'https://4kwallpapers.com/images/wallpapers/windows-11-blue-stock-3840x2160-5668.jpg',
+    'https://wallpaperaccess.com/full/5669109.jpg'
+  ];
+  function tryWallpaper(index = 0) {
+    if (index >= wallpaperUrls.length) return;
+    const test = new Image();
+    test.onload = () => {
+      if (test.naturalWidth < 700) return tryWallpaper(index + 1);
+      $('#wallpaper').src = wallpaperUrls[index];
+      $('#wallpaper').classList.add('loaded');
+    };
+    test.onerror = () => tryWallpaper(index + 1);
+    test.src = wallpaperUrls[index];
+  }
+  tryWallpaper();
+
+  function hideFlyouts(except) {
+    flyouts.forEach(id => { if (id !== except) $(id).classList.add('hidden'); });
+    $('#power-pop').classList.add('hidden');
+  }
+  function toggleFlyout(id) {
+    const wasHidden = $(id).classList.contains('hidden');
+    hideFlyouts();
+    if (wasHidden) $(id).classList.remove('hidden');
+    if (id === '#search-panel' && wasHidden) setTimeout(() => $('#search-input').focus(), 30);
+  }
+
+  const pinned = [
+    ['edge','Edge'], ['notepad','Notepad'], ['explorer','File Explorer'],
+    ['settings','Settings'], ['store','Microsoft Store'], ['calculator','Calculator'],
+    ['explorer','This PC'], ['bin','Recycle Bin'], ['edge','Internet'],
+    ['notepad','Text Document'], ['settings','Personalization'], ['explorer','Pictures']
+  ];
+  $('#pinned-grid').innerHTML = pinned.map(([app, label]) =>
+    `<button class="pinned-app" data-open="${app}">${icon(apps[app].icon)}<span>${label}</span></button>`).join('');
+  $('#recommended').innerHTML = [
+    ['explorer','File Explorer','Recently opened'],
+    ['notepad','Untitled','Recently added'],
+    ['settings','Settings','Recently opened'],
+    ['calculator','Calculator','Recently added']
+  ].map(([app, label, sub]) =>
+    `<button class="recommend-item" data-open="${app}">${icon(apps[app].icon)}<span>${label}<small>${sub}</small></span></button>`).join('');
+
+  function renderSearch() {
+    const q = $('#search-input').value.trim().toLowerCase();
+    const results = Object.entries(apps).filter(([id, a]) =>
+      !q || a.title.toLowerCase().includes(q) || id.includes(q));
+    $('#search-heading').textContent = q ? 'Best match' : 'Top apps';
+    $('#search-results').innerHTML = results.length
+      ? results.map(([id,a]) => `<button class="search-result" data-open="${id}">${icon(a.icon)}<span>${a.title}<small style="display:block;color:#777;margin-top:3px">App</small></span></button>`).join('')
+      : `<div style="padding:20px;color:#777">No results found for “${escapeHTML(q)}”</div>`;
+  }
+  function escapeHTML(s) { return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  function openApp(id) {
+    if (!apps[id]) return;
+    hideFlyouts();
+    let win = $(`.window[data-app="${id}"]`);
+    if (win) {
+      win.classList.remove('hidden');
+      focusWindow(win);
+      return;
+    }
+    const app = apps[id];
+    win = document.createElement('div');
+    win.className = 'window';
+    win.dataset.app = id;
+    win.style.width = Math.min(app.width, innerWidth - 28) + 'px';
+    win.style.height = Math.min(app.height, innerHeight - 70) + 'px';
+    win.style.left = Math.max(7, (innerWidth - Math.min(app.width, innerWidth - 28)) / 2 + ((windowCount % 5) - 2) * 22) + 'px';
+    win.style.top = Math.max(7, (innerHeight - 48 - Math.min(app.height, innerHeight - 70)) / 2 + ((windowCount % 5) - 2) * 18) + 'px';
+    windowCount++;
+    win.innerHTML = `
+      <div class="titlebar">
+        <div class="window-title">${icon(app.icon)}<span class="title-text">${app.title}</span></div>
+        <div class="window-actions">
+          <button class="window-action minimize" title="Minimize"><svg viewBox="0 0 12 12"><path d="M1 7h10" stroke="currentColor"/></svg></button>
+          <button class="window-action maximize" title="Maximize"><svg viewBox="0 0 12 12"><rect x="1.5" y="1.5" width="9" height="9" fill="none" stroke="currentColor"/></svg></button>
+          <button class="window-action close" title="Close"><svg viewBox="0 0 12 12"><path d="m1 1 10 10M11 1 1 11" stroke="currentColor"/></svg></button>
+        </div>
+      </div>
+      <div class="window-content">${appContent(id)}</div><div class="resize-grip"></div>`;
+    $('#windows').append(win);
+    win.addEventListener('pointerdown', () => focusWindow(win));
+    win.querySelector('.minimize').onclick = () => { win.classList.add('hidden'); updateTaskbar(); };
+    win.querySelector('.maximize').onclick = () => { win.classList.toggle('maximized'); focusWindow(win); };
+    win.querySelector('.close').onclick = () => { win.remove(); focused = null; updateTaskbar(); };
+    win.querySelector('.titlebar').ondblclick = e => {
+      if (!e.target.closest('button')) win.classList.toggle('maximized');
+    };
+    installDragging(win);
+    if (id === 'explorer' || id === 'bin') renderExplorer(win, id === 'bin' ? 'Recycle Bin' : explorerPath);
+    if (id === 'settings') renderSettings(win, 'Home');
+    if (id === 'calculator') initCalculator(win);
+    if (id === 'notepad') {
+      const textarea = win.querySelector('textarea');
+      textarea.value = note;
+      textarea.addEventListener('input', () => { note = textarea.value; localStorage.setItem('win11-note', note); });
+    }
+    focusWindow(win);
+    updateTaskbar();
+  }
+  window.openApp = openApp;
+  window.hideFlyouts = hideFlyouts;
+
+  function focusWindow(win) {
+    $$('.window').forEach(w => w.classList.add('inactive'));
+    win.classList.remove('inactive');
+    win.style.zIndex = ++topZ;
+    focused = win;
+    updateTaskbar();
+  }
+  function updateTaskbar() {
+    $$('[data-task]').forEach(button => {
+      const win = $(`.window[data-app="${button.dataset.task}"]`);
+      const pinned = ['edge','explorer','store'].includes(button.dataset.task);
+      button.classList.toggle('hidden', !pinned && !win);
+      button.classList.toggle('running', !!win);
+      button.classList.toggle('focused', !!win && win === focused && !win.classList.contains('hidden'));
+    });
+  }
+  function installDragging(win) {
+    const bar = win.querySelector('.titlebar');
+    bar.addEventListener('pointerdown', e => {
+      if (e.button !== 0 || e.target.closest('button') || win.classList.contains('maximized')) return;
+      const startX = e.clientX, startY = e.clientY;
+      const x = win.offsetLeft, y = win.offsetTop;
+      bar.setPointerCapture(e.pointerId);
+      const move = ev => {
+        win.style.left = Math.max(-win.offsetWidth + 140, Math.min(innerWidth - 140, x + ev.clientX - startX)) + 'px';
+        win.style.top = Math.max(0, Math.min(innerHeight - 85, y + ev.clientY - startY)) + 'px';
+      };
+      bar.addEventListener('pointermove', move);
+      bar.addEventListener('pointerup', () => bar.removeEventListener('pointermove', move), {once:true});
+    });
+    const grip = win.querySelector('.resize-grip');
+    grip.addEventListener('pointerdown', e => {
+      e.stopPropagation();
+      const sx = e.clientX, sy = e.clientY, w = win.offsetWidth, h = win.offsetHeight;
+      grip.setPointerCapture(e.pointerId);
+      const move = ev => {
+        win.style.width = Math.max(340, Math.min(innerWidth - win.offsetLeft, w + ev.clientX - sx)) + 'px';
+        win.style.height = Math.max(260, Math.min(innerHeight - 48 - win.offsetTop, h + ev.clientY - sy)) + 'px';
+      };
+      grip.addEventListener('pointermove', move);
+      grip.addEventListener('pointerup', () => grip.removeEventListener('pointermove', move), {once:true});
+    });
+  }
+
+  function appContent(id) {
+    if (id === 'explorer' || id === 'bin') return `
+      <div class="explorer-toolbar">
+        <button class="toolbar-button explorer-back" title="Back"><svg><use href="#i-back"/></svg></button>
+        <button class="toolbar-button explorer-forward" title="Forward">→</button>
+        <button class="toolbar-button explorer-up" title="Up">↑</button>
+        <button class="toolbar-button explorer-refresh" title="Refresh"><svg><use href="#i-refresh"/></svg></button>
+        <div class="explorer-address">${icon(id === 'bin' ? 'bin' : 'pc')}<span class="address-label"></span></div>
+        <input class="explorer-search" placeholder="Search" aria-label="Search files">
+      </div>
+      <div class="command-bar">
+        <button class="new-file" title="New folder"><svg><use href="#i-plus"/></svg> New</button>
+        <button class="rename-file" title="Rename selected item">✎ &nbsp; Rename</button>
+        <button class="delete-file" title="Delete selected item">▤ &nbsp; Delete</button>
+        <span style="flex:1"></span>
+        <button class="sort-files">☷ &nbsp; Sort</button>
+        <button class="view-files">▦ &nbsp; View</button>
+      </div>
+      <div class="explorer-layout">
+        <div class="explorer-sidebar"></div><div class="explorer-main"></div>
+      </div><div class="explorer-status">0 items</div>`;
+    if (id === 'settings') return `<div class="settings-layout"><div class="settings-sidebar"></div><div class="settings-main"></div></div>`;
+    if (id === 'notepad') return `
+      <div class="notepad-menu">
+        <button class="notepad-new">File</button><button class="notepad-save">Save</button>
+        <button class="notepad-download">Save as</button><span style="flex:1"></span><span style="color:#777;font-size:12px">Untitled</span>
+      </div><textarea class="notepad-text" spellcheck="false" placeholder="Start typing..."></textarea>
+      <div class="notepad-status">Windows (CRLF) &nbsp; UTF-8</div>`;
+    if (id === 'calculator') return `
+      <div class="calc">
+        <div class="calc-mode">☰ &nbsp; Standard</div>
+        <div class="calc-expression"></div><div class="calc-display">0</div>
+        <div class="calc-keys">${[
+          '%','CE','C','⌫','1/x','x²','√x','÷',
+          '7','8','9','×','4','5','6','−',
+          '1','2','3','+','+/−','0','.','='
+        ].map(k => `<button class="${'÷×−+%1/xx²√x'.includes(k) || ['CE','C','⌫'].includes(k) ? 'operator' : ''} ${k==='='?'equals':''}" data-key="${k}">${k}</button>`).join('')}</div>
+      </div>`;
+    if (id === 'edge') return `
+      <div class="browser-bar">
+        <button class="browser-back" title="Back">←</button><button class="browser-forward" title="Forward">→</button>
+        <button class="browser-reload" title="Reload">↻</button>
+        <input class="browser-address" value="Search the web" aria-label="Address bar">
+        <button class="browser-go">⋯</button>
+      </div>
+      <div class="browser-home">
+        ${icon('edge')}
+        <h1>Welcome to Microsoft Edge</h1>
+        <p>Search the web</p>
+        <input class="browser-home-search" placeholder="Search the web" aria-label="Search the web">
+        <p style="color:#697584;font-size:12px;margin-top:28px">Enter a web address or search term to open it in a new browser tab.</p>
+      </div>`;
+    if (id === 'store') return `
+      <div style="display:flex;flex:1;overflow:auto;background:#fafafa">
+        <aside style="width:190px;padding:24px 17px;border-right:1px solid #eee">
+          <div style="font-weight:600;margin-bottom:30px;display:flex;align-items:center;gap:10px">${icon('store')} Microsoft Store</div>
+          <p>⌂ &nbsp; Home</p><p>▦ &nbsp; Apps</p><p>◈ &nbsp; Gaming</p><p>▤ &nbsp; Library</p>
+        </aside>
+        <main style="flex:1;padding:35px">
+          <h1 style="font-size:28px;font-weight:600">Welcome to Microsoft Store</h1>
+          <input placeholder="Search apps, games, movies and more" style="width:min(450px,100%);padding:11px;border:1px solid #ddd;border-bottom:2px solid var(--accent);border-radius:4px">
+          <h2 style="margin-top:34px">Essential apps</h2>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:13px">
+            ${[['edge','Microsoft Edge'],['notepad','Notepad'],['calculator','Calculator'],['settings','Settings']].map(([a,t]) =>
+              `<button data-open="${a}" style="border:1px solid #eee;border-radius:7px;background:white;padding:23px;text-align:left;min-height:135px">${icon(apps[a].icon)}<br><br>${t}<br><small style="color:#777">Included</small></button>`).join('')}
+          </div>
+        </main>
+      </div>`;
+  }
+
+  const folders = [
+    ['Desktop','folder'],['Documents','folder'],['Downloads','folder'],
+    ['Pictures','photo'],['Music','folder'],['Videos','folder']
+  ];
+  const fileStore = JSON.parse(localStorage.getItem('win11-files') || '{}');
+  function saveFiles() { localStorage.setItem('win11-files', JSON.stringify(fileStore)); }
+  function renderExplorer(win, path) {
+    explorerPath = path;
+    const sidebar = win.querySelector('.explorer-sidebar');
+    const choices = [['Home','pc'], ...folders, ['This PC','pc'], ['Recycle Bin','bin']];
+    sidebar.innerHTML = choices.map(([label,ic],i) =>
+      `${i===7 ? '<div style="border-top:1px solid #eee;margin:9px 8px"></div>' : ''}
+      <button class="sidebar-item ${path === label ? 'active' : ''}" data-path="${label}">${icon(ic)} ${label}</button>`).join('');
+    win.querySelector('.address-label').textContent = '  ›  ' + path;
+    win.querySelector('.explorer-search').placeholder = 'Search ' + path;
+    const main = win.querySelector('.explorer-main');
+    let html = '';
+    if (path === 'Home' || path === 'This PC') {
+      html += `<div class="explorer-section">${path === 'Home' ? 'Quick access' : 'Folders'}</div>
+        <div class="folder-grid">${folders.map(([label,ic]) =>
+          `<button class="folder-tile" data-path="${label}">${icon(ic)}<span>${label}<small>Local folder</small></span></button>`).join('')}</div>`;
+      if (path === 'This PC') html += `<div class="explorer-section">Devices and drives</div>
+        <button class="folder-tile" data-path="Local Disk (C:)" style="margin-top:14px;width:230px">${icon('pc')}<span>Local Disk (C:)<small>Local storage</small></span></button>`;
+    }
+    if (path === 'Recycle Bin') html += `<div style="text-align:center;color:#777;padding:90px 0">${icon('bin')}<p>Recycle Bin is empty.</p></div>`;
+    else if (path !== 'Home' && path !== 'This PC') {
+      const items = fileStore[path] || [];
+      if (items.length) html += `<div class="explorer-section">Name</div>${items.map((name,i) =>
+        `<button class="file-row" data-file="${i}">${icon('folder')}<span>${escapeHTML(name)}</span><small>File folder</small></button>`).join('')}`;
+      else html += `<div style="text-align:center;color:#777;padding:95px 0">This folder is empty.</div>`;
+    }
+    main.innerHTML = html;
+    win.querySelector('.explorer-status').textContent =
+      (path === 'Home' || path === 'This PC' ? 6 : (fileStore[path] || []).length) + ' items';
+    sidebar.querySelectorAll('[data-path]').forEach(b => b.onclick = () => renderExplorer(win, b.dataset.path));
+    main.querySelectorAll('[data-path]').forEach(b => b.ondblclick = () => renderExplorer(win, b.dataset.path));
+    main.querySelectorAll('[data-file]').forEach(b => b.onclick = () => {
+      main.querySelectorAll('.file-row').forEach(x => x.style.background = '');
+      b.style.background = '#e5f1fb'; selectedFile = +b.dataset.file;
+    });
+    win.querySelector('.explorer-back').onclick = () => renderExplorer(win, 'Home');
+    win.querySelector('.explorer-up').onclick = () => renderExplorer(win, 'Home');
+    win.querySelector('.explorer-refresh').onclick = () => renderExplorer(win, path);
+    win.querySelector('.new-file').onclick = () => {
+      if (['Home','This PC','Recycle Bin'].includes(explorerPath)) renderExplorer(win, 'Documents');
+      const name = prompt('New folder name:', 'New folder');
+      if (name && name.trim()) { (fileStore[explorerPath] ||= []).push(name.trim()); saveFiles(); renderExplorer(win, explorerPath); }
+    };
+    win.querySelector('.delete-file').onclick = () => {
+      if (selectedFile === null || !fileStore[explorerPath]) return;
+      fileStore[explorerPath].splice(selectedFile, 1); selectedFile = null; saveFiles(); renderExplorer(win, explorerPath);
+    };
+    win.querySelector('.rename-file').onclick = () => {
+      if (selectedFile === null || !fileStore[explorerPath]) return;
+      const name = prompt('Rename folder:', fileStore[explorerPath][selectedFile]);
+      if (name && name.trim()) { fileStore[explorerPath][selectedFile] = name.trim(); saveFiles(); renderExplorer(win, explorerPath); }
+    };
+    win.querySelector('.explorer-search').oninput = e => {
+      const q = e.target.value.toLowerCase();
+      main.querySelectorAll('.folder-tile,.file-row').forEach(row => row.classList.toggle('hidden', !row.textContent.toLowerCase().includes(q)));
+    };
+  }
+
+  function renderSettings(win, page) {
+    const sections = [['Home','pc'],['System','settings'],['Bluetooth & devices','bluetooth'],
+      ['Network & internet','wifi'],['Personalization','photo'],['Apps','store'],
+      ['Accounts','pc'],['Time & language','settings'],['Accessibility','settings'],
+      ['Privacy & security','settings'],['Windows Update','refresh']];
+    win.querySelector('.settings-sidebar').innerHTML = `
+      <div class="settings-profile"><span class="avatar">●</span><div>User<small>Local account</small></div></div>
+      <input class="settings-search" placeholder="Find a setting">
+      ${sections.map(([label,ic]) => `<button class="sidebar-item ${page===label?'active':''}" data-settings="${label}">${icon(ic)} ${label}</button>`).join('')}`;
+    win.querySelectorAll('[data-settings]').forEach(b => b.onclick = () => renderSettings(win, b.dataset.settings));
+    const main = win.querySelector('.settings-main');
+    if (page === 'Home') main.innerHTML = `<h1>Home</h1>
+      <div class="settings-card">${icon('pc')}<span><b>Windows 11</b><small>Your device is up to date</small></span></div>
+      <h2>Recommended settings</h2>
+      ${[['Personalization','Customize your background, colors, and themes','photo'],
+        ['System','Display, sound, notifications, power','settings'],
+        ['Network & internet','Wi-Fi, airplane mode, VPN','wifi']].map(([t,s,ic]) =>
+        `<button class="settings-card" data-settings="${t}">${icon(ic)}<span>${t}<small>${s}</small></span><span class="chevron">›</span></button>`).join('')}`;
+    else if (page === 'Personalization') main.innerHTML = `<h1>Personalization</h1>
+      <div class="settings-card">${icon('photo')}<span>Background<small>Windows spotlight and desktop wallpaper</small></span></div>
+      <h2>Colors</h2>
+      <div class="settings-card"><span>Choose your mode<small>Customize the colors that appear in Windows</small></span>
+        <select class="setting-select" id="theme-select"><option>Light</option><option>Dark</option></select></div>
+      <div class="settings-card"><span>Accent color<small>Choose your favorite color</small></span>
+        <span style="margin-left:auto;display:flex;gap:10px">
+          ${['#0067c0','#744da9','#e95420','#10893e','#e3008c','#d13438'].map(c =>
+            `<span class="color-swatch" data-color="${c}" style="background:${c}"></span>`).join('')}
+        </span></div>`;
+    else if (page === 'System') main.innerHTML = `<h1>System</h1>
+      ${[['Display','Brightness, night light, display profile','sun'],
+        ['Sound','Volume levels, output, input devices','volume'],
+        ['Notifications','Alerts from apps and system','settings'],
+        ['Power & battery','Battery usage, power saver','battery'],
+        ['Storage','Storage space and drives','pc'],
+        ['About','Windows 11 · Web desktop','pc']].map(([t,s,ic]) =>
+        `<div class="settings-card">${icon(ic)}<span>${t}<small>${s}</small></span><span class="chevron">›</span></div>`).join('')}`;
+    else main.innerHTML = `<h1>${escapeHTML(page)}</h1><div class="settings-card">${icon(sections.find(x=>x[0]===page)?.[1] || 'settings')}
+      <span>${escapeHTML(page)}<small>Manage your ${escapeHTML(page.toLowerCase())} settings</small></span></div>`;
+    main.querySelectorAll('[data-settings]').forEach(b => b.onclick = () => renderSettings(win, b.dataset.settings));
+    main.querySelectorAll('[data-color]').forEach(b => b.onclick = () => document.documentElement.style.setProperty('--accent', b.dataset.color));
+    const select = main.querySelector('#theme-select');
+    if (select) {
+      select.value = theme;
+      select.onchange = () => { theme = select.value; localStorage.setItem('win11-theme', theme); applyTheme(); };
+    }
+  }
+  function applyTheme() {
+    if (theme === 'Dark') {
+      document.documentElement.style.setProperty('--panel','rgba(38,38,38,.97)');
+      document.documentElement.style.setProperty('--taskbar','rgba(32,32,32,.89)');
+      document.documentElement.style.setProperty('--text','#f4f4f4');
+      $('#taskbar').style.color = '#fff';
+    } else {
+      document.documentElement.style.setProperty('--panel','rgba(249,249,249,.96)');
+      document.documentElement.style.setProperty('--taskbar','rgba(243,243,243,.87)');
+      document.documentElement.style.setProperty('--text','#202020');
+      $('#taskbar').style.color = '';
+    }
+  }
+  // The dark taskbar is provided as a quick appearance option; app surfaces stay light.
+  if (theme === 'Dark') applyTheme();
+
+  function initCalculator(win) {
+    let current = '0', previous = null, op = null, fresh = false;
+    const display = win.querySelector('.calc-display');
+    const expression = win.querySelector('.calc-expression');
+    function show() { display.textContent = current.slice(0, 15); expression.textContent = previous !== null ? `${previous} ${op || ''}` : ''; }
+    function calculate() {
+      if (previous === null || !op) return;
+      const a = Number(previous), b = Number(current);
+      const result = ({'+':()=>a+b,'−':()=>a-b,'×':()=>a*b,'÷':()=>a/b,'%':()=>a*b/100}[op] || (()=>b))();
+      current = Number.isFinite(result) ? String(Number(result.toPrecision(11))) : 'Cannot divide by zero';
+      previous = null; op = null; fresh = true;
+    }
+    win.querySelectorAll('[data-key]').forEach(button => button.onclick = () => {
+      const k = button.dataset.key;
+      if (/^\d$/.test(k)) { current = fresh || current === '0' ? k : current + k; fresh = false; }
+      else if (k === '.') { if (fresh) { current = '0'; fresh = false; } if (!current.includes('.')) current += '.'; }
+      else if (k === 'C' || k === 'CE') { current = '0'; if (k === 'C') { previous = null; op = null; } }
+      else if (k === '⌫') current = current.length > 1 ? current.slice(0,-1) : '0';
+      else if (k === '+/−') current = String(-Number(current));
+      else if (k === '1/x') current = String(1/Number(current));
+      else if (k === 'x²') current = String(Number(current)**2);
+      else if (k === '√x') current = String(Math.sqrt(Number(current)));
+      else if (k === '=') calculate();
+      else { if (op && !fresh) calculate(); previous = current; op = k; fresh = true; }
+      show();
+    });
+  }
+
+  // Event delegation allows buttons inside newly created windows to work.
+  document.addEventListener('click', e => {
+    const open = e.target.closest('[data-open]');
+    if (open) { openApp(open.dataset.open); return; }
+    const task = e.target.closest('[data-task]');
+    if (task) {
+      const win = $(`.window[data-app="${task.dataset.task}"]`);
+      if (win && win === focused && !win.classList.contains('hidden')) { win.classList.add('hidden'); updateTaskbar(); }
+      else openApp(task.dataset.task);
+      return;
+    }
+    if (e.target.closest('.notepad-new')) {
+      const t = e.target.closest('.window').querySelector('textarea');
+      if (t.value && !confirm('Create a new document? The current document will be cleared.')) return;
+      t.value = ''; t.dispatchEvent(new Event('input')); t.focus();
+    }
+    if (e.target.closest('.notepad-save')) {
+      const t = e.target.closest('.window').querySelector('textarea');
+      localStorage.setItem('win11-note', t.value);
+      e.target.textContent = 'Saved ✓'; setTimeout(() => e.target.textContent = 'Save', 1200);
+    }
+    if (e.target.closest('.notepad-download')) {
+      const t = e.target.closest('.window').querySelector('textarea');
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([t.value], {type:'text/plain'}));
+      a.download = 'Untitled.txt'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }
+    if (e.target.closest('.browser-go')) browse(e.target.closest('.window').querySelector('.browser-address').value);
+  });
+  function browse(value) {
+    value = value.trim();
+    if (!value || value === 'Search the web') return;
+    const url = /^https?:\/\//i.test(value) ? value : /^[^\s]+\.[^\s]+$/.test(value) ? 'https://' + value
+      : 'https://www.bing.com/search?q=' + encodeURIComponent(value);
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.matches('.browser-address,.browser-home-search')) browse(e.target.value);
+    if (e.key === 'Enter' && e.target.matches('#search-input')) {
+      const first = $('#search-results [data-open]'); if (first) openApp(first.dataset.open);
+    }
+    if (e.key === 'Escape') hideFlyouts();
+    if (e.key === 'Enter' && e.target.matches('.desktop-icon')) openApp(e.target.dataset.open);
+  });
+
+  $('#task-start').onclick = () => toggleFlyout('#start-menu');
+  $('#task-search').onclick = () => { toggleFlyout('#search-panel'); renderSearch(); };
+  $('#task-view').onclick = () => {
+    hideFlyouts();
+    $$('.window:not(.hidden)').forEach((w,i) => {
+      w.classList.remove('maximized');
+      w.style.left = (35 + i * 35) + 'px'; w.style.top = (35 + i * 28) + 'px';
+    });
+  };
+  $('#start-search').onclick = () => { toggleFlyout('#search-panel'); renderSearch(); };
+  $('#all-apps').onclick = () => {
+    $('#pinned-grid').innerHTML = Object.entries(apps).map(([id,a]) =>
+      `<button class="pinned-app" data-open="${id}">${icon(a.icon)}<span>${a.title}</span></button>`).join('');
+    $('#all-apps').textContent = 'Back ‹';
+    $('#all-apps').onclick = () => location.reload();
+  };
+  $('#power-button').onclick = () => $('#power-pop').classList.toggle('hidden');
+  window.powerAction = action => {
+    $('#power-pop').classList.add('hidden');
+    if (action === 'Restart') { location.reload(); return; }
+    hideFlyouts();
+    if (action === 'Sleep' || action === 'Shut down') {
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:#080808;z-index:3000;display:grid;place-items:center;color:white;cursor:pointer;font-size:16px';
+      overlay.innerHTML = `<div style="text-align:center"><div class="win-logo white" style="width:46px;height:46px;margin:0 auto 25px"><i></i><i></i><i></i><i></i></div>${action === 'Sleep' ? 'Click anywhere to wake up' : 'Shutting down... Click to turn on'}</div>`;
+      overlay.onclick = () => overlay.remove(); document.body.append(overlay);
+    }
+  };
+  $('#search-input').oninput = renderSearch;
+  $('#tray-quick').onclick = () => toggleFlyout('#quick-panel');
+  $('#tray-clock').onclick = () => { buildCalendar(); toggleFlyout('#calendar-panel'); };
+  $('#show-desktop').onclick = () => { $$('.window').forEach(w => w.classList.add('hidden')); updateTaskbar(); hideFlyouts(); };
+  $$('.quick-toggle').forEach(b => b.onclick = () => b.classList.toggle('on'));
+  $('#brightness').oninput = e => {
+    $('#wallpaper').style.filter = `brightness(${.55 + e.target.value / 220})`;
+    $('#fallback-wallpaper').style.filter = `brightness(${.55 + e.target.value / 220})`;
+  };
+
+  function updateClock() {
+    const d = new Date();
+    $('#clock-time').textContent = d.toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit'});
+    $('#clock-date').textContent = d.toLocaleDateString('en-US', {month:'numeric',day:'numeric',year:'numeric'});
+  }
+  updateClock(); setInterval(updateClock, 15000);
+  function buildCalendar() {
+    const d = new Date(), first = new Date(d.getFullYear(),d.getMonth(),1);
+    const days = new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+    const before = first.getDay();
+    $('#calendar-date').textContent = d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+    $('#calendar-month').textContent = d.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    let cells = ['Su','Mo','Tu','We','Th','Fr','Sa'].map(x=>`<span style="font-weight:600">${x}</span>`).join('');
+    for (let i = 0; i < before; i++) cells += `<span class="dim">${new Date(d.getFullYear(),d.getMonth(),i-before+1).getDate()}</span>`;
+    for (let i = 1; i <= days; i++) cells += `<span class="${i===d.getDate()?'today':''}">${i}</span>`;
+    $('#calendar-grid').innerHTML = cells;
+  }
+
+  $('#desktop').addEventListener('click', e => {
+    if (e.target.closest('.desktop-icon')) {
+      $$('.desktop-icon').forEach(el => el.classList.remove('selected'));
+      e.target.closest('.desktop-icon').classList.add('selected');
+    } else { hideFlyouts(); $$('.desktop-icon').forEach(el => el.classList.remove('selected')); }
+  });
+  $$('.desktop-icon').forEach(el => el.ondblclick = () => openApp(el.dataset.open));
+  document.addEventListener('pointerdown', e => {
+    if (!e.target.closest('.flyout,#taskbar')) hideFlyouts();
+  });
+  $('#desktop').addEventListener('contextmenu', e => {
+    e.preventDefault(); hideFlyouts();
+    const menu = $('#context-menu');
+    menu.innerHTML = `
+      <button class="context-item" data-context="refresh"><svg><use href="#i-refresh"/></svg> Refresh</button>
+      <button class="context-item" data-context="sort">☷ &nbsp; Sort by</button>
+      <button class="context-item" data-context="view">▦ &nbsp; View</button>
+      <div class="context-separator"></div>
+      <button class="context-item" data-context="new">＋ &nbsp; New folder</button>
+      <div class="context-separator"></div>
+      <button class="context-item" data-context="settings">${icon('settings')} Display settings</button>
+      <button class="context-item" data-context="personalize">${icon('photo')} Personalize</button>`;
+    menu.classList.remove('hidden');
+    menu.style.left = Math.min(e.clientX, innerWidth - 235) + 'px';
+    menu.style.top = Math.min(e.clientY, innerHeight - 300) + 'px';
+  });
+  $('#context-menu').onclick = e => {
+    const action = e.target.closest('[data-context]')?.dataset.context;
+    hideFlyouts();
+    if (action === 'refresh') tryWallpaper();
+    if (action === 'new') { openApp('explorer'); renderExplorer($('.window[data-app="explorer"]'), 'Desktop'); $('.window[data-app="explorer"] .new-file').click(); }
+    if (action === 'settings' || action === 'personalize') {
+      openApp('settings');
+      renderSettings($('.window[data-app="settings"]'), action === 'personalize' ? 'Personalization' : 'System');
+    }
+  };
+})();
+</script>
+</body>
+</html>
