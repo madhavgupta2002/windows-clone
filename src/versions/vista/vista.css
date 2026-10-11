@@ -1,0 +1,280 @@
+/* ================= Windows Vista — Aero ================= */
+.os-vista {
+  --ui-font: 12px 'Segoe UI', Tahoma, 'Helvetica Neue', sans-serif;
+  --ui-fg: #000;
+  --ui-bg: #f0f0f0;
+  --field-bg: #fff;
+  --field-fg: #000;
+  --accent: #3399ff;
+  --accent-fg: #fff;
+  --border-light: #fff;
+  --border-dark: #a0a0a0;
+  --border-darker: #707070;
+  --radius: 3px;
+  --glass: rgba(70, 110, 150, .42);
+  font: var(--ui-font);
+  color: var(--ui-fg);
+  background: #000;
+}
+.os-vista button { font: inherit; color: inherit; }
+
+/* ---------- boot ---------- */
+.vista-boot { position: absolute; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 46px; cursor: none; }
+.vista-pearl { width: 130px; height: 130px; border-radius: 50%; display: grid; place-items: center; position: relative;
+  background: radial-gradient(circle at 50% 35%, #ffffff40, transparent 45%), radial-gradient(circle at 50% 60%, #1d6b8a, #0b2c3e 55%, #000 72%);
+  box-shadow: 0 0 60px 10px #2a9fd655; animation: vista-pearl 3s ease-in-out infinite; }
+.vista-pearl::before { content: ''; position: absolute; inset: -18px; border-radius: 50%; background: conic-gradient(from 0deg, transparent, #7fe0ff55, transparent 30%, #9cff9c44 50%, transparent 70%, #ffd27a44, transparent); filter: blur(10px); animation: vista-spin 4s linear infinite; }
+.vista-pearl img { width: 64px; height: 64px; position: relative; filter: drop-shadow(0 0 12px #fff8); animation: vista-fadein 1.5s ease-out; }
+@keyframes vista-pearl { 50% { box-shadow: 0 0 80px 20px #43c4ff66; } }
+@keyframes vista-spin { to { transform: rotate(360deg); } }
+@keyframes vista-fadein { from { opacity: 0; transform: scale(.7); } }
+.vista-boot-bar { width: 160px; height: 14px; border: 1px solid #555; border-radius: 3px; overflow: hidden; background: #0a0a0a; position: relative; }
+.vista-boot-bar i { position: absolute; top: 2px; bottom: 2px; width: 40px; border-radius: 2px; background: linear-gradient(90deg, transparent, #2bd42b 20%, #9bff6b 50%, #2bd42b 80%, transparent); animation: vista-bar 1.8s linear infinite; }
+@keyframes vista-bar { from { left: -45px; } to { left: 165px; } }
+.vista-boot-copy { position: absolute; bottom: 24px; color: #888; font: 12px 'Segoe UI', sans-serif; }
+
+/* ---------- logon ---------- */
+.vista-logon { position: absolute; inset: 0; color: #fff; overflow: hidden;
+  background: radial-gradient(ellipse 60% 40% at 50% 100%, #3b9ad9aa, transparent 70%), linear-gradient(170deg, transparent 50%, #6fd2ff22 60%, transparent 70%), linear-gradient(#0a2a4a, #0e4f7c 55%, #0b6aa0 80%, #1185c4); }
+.vista-logon::after { content: ''; position: absolute; left: -10%; right: -10%; top: 58%; height: 30%; background: radial-gradient(ellipse at 50% 0%, #ffffff30, transparent 60%); border-top: 1px solid #ffffff40; border-radius: 50% 50% 0 0; pointer-events: none; }
+.vista-logon-center { position: absolute; inset: 0 0 20%; display: grid; place-items: center; z-index: 1; }
+.vista-user-tile { display: flex; flex-direction: column; align-items: center; gap: 10px; border: 0; background: none; cursor: pointer; padding: 12px; border-radius: 6px; color: #fff !important; }
+.vista-user-frame { padding: 6px; border-radius: 8px; background: linear-gradient(#ffffffcc, #ffffff55); box-shadow: 0 2px 10px #0008; transition: box-shadow .2s; }
+.vista-user-frame .icon { border-radius: 4px; }
+.vista-user-tile:hover .vista-user-frame, .vista-user-tile:focus-visible .vista-user-frame { box-shadow: 0 0 18px 4px #9fdcffcc; }
+.vista-user-tile:focus-visible { outline: none; }
+.vista-user-name { font: 22px 'Segoe UI', sans-serif; text-shadow: 0 1px 4px #000a; }
+.vista-user-sub { font-size: 13px; opacity: .8; }
+.vista-logon-msg { display: flex; align-items: center; gap: 18px; font: 300 34px 'Segoe UI', sans-serif; text-shadow: 0 2px 6px #0008; }
+.vista-spinner { width: 34px; height: 34px; border-radius: 50%; border: 4px solid #ffffff30; border-top-color: #9fe3ff; border-right-color: #3fb3ff; animation: vista-spin 1s linear infinite; }
+.vista-logon-brand { position: absolute; left: 50%; bottom: 7%; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; z-index: 1; font: 26px 'Segoe UI', sans-serif; text-shadow: 0 1px 4px #0008; }
+.vista-logon-brand img { width: 36px; height: 36px; }
+.vista-logon-brand sup { font-size: 40%; }
+.vista-logon-brand small { font-size: 16px; opacity: .85; margin-left: 4px; }
+.vista-logon-power { position: absolute; right: 32px; bottom: 32px; z-index: 2; border: 1px solid #ffffff60; border-radius: 5px; padding: 4px; background: #ffffff18; cursor: pointer; }
+.vista-logon-power:hover { background: #ffffff35; }
+
+/* ---------- desktop ---------- */
+.vista-desktop { position: absolute; inset: 0; background-size: cover; }
+.os-vista .desktop-icons { padding: 8px 4px; gap: 10px 4px; }
+.os-vista .desktop-icon { width: 78px; padding: 3px 2px; color: #fff; border: 1px solid transparent; border-radius: 3px; }
+.os-vista .desktop-icon:hover { background: #ffffff20; border-color: #ffffff40; }
+.os-vista .desktop-icon.selected { background: #9fd3ff40; border-color: #bfe3ffa0; }
+.os-vista .desktop-icon-img { width: 40px; height: 40px; font-size: 34px; margin-bottom: 3px; filter: drop-shadow(0 2px 2px #0007); }
+.os-vista .desktop-icon-label { text-shadow: 0 0 3px #000, 1px 1px 2px #000; word-break: break-word; line-height: 1.25; }
+
+/* ---------- sidebar & gadgets ---------- */
+.vista-sidebar { position: absolute; top: 0; right: 0; bottom: 0; width: 162px; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 4px 8px 10px;
+  background: linear-gradient(90deg, transparent, #00000040 30%, #00000060); border-left: 1px solid #ffffff18; overflow: hidden; }
+.vista-sidebar-top { align-self: stretch; display: flex; align-items: center; justify-content: space-between; color: #fff; opacity: .55; font-size: 11px; transition: opacity .2s; }
+.vista-sidebar:hover .vista-sidebar-top { opacity: 1; }
+.vista-sidebar-top button { border: 0; background: none; color: #fff !important; font-size: 15px !important; line-height: 1; padding: 0 3px; cursor: pointer; }
+.gadget { width: 130px; flex: none; filter: drop-shadow(0 3px 5px #000a); }
+.gadget-clock svg { width: 130px; height: 130px; display: block; }
+.gadget-meter { border-radius: 10px; background: linear-gradient(#5b6470, #2a3038 50%, #1a1e24); border: 1px solid #9aa3ad; padding: 2px; }
+.gadget-meter svg { width: 100%; display: block; }
+.gadget-slides { height: 96px; position: relative; border: 4px solid #eee; border-radius: 3px; background: #222; overflow: hidden; cursor: pointer; }
+.gadget-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 1s; background-size: cover !important; }
+.gadget-slide.on { opacity: 1; }
+.gadget-slide-caption { position: absolute; left: 0; right: 0; bottom: 0; padding: 1px 4px; background: #0008; color: #fff; font-size: 10px; opacity: 0; transition: opacity .2s; }
+.gadget-slides:hover .gadget-slide-caption { opacity: 1; }
+.gadget-notes { height: 130px; background: linear-gradient(#fff9b5, #f6e57a); border-radius: 2px; transform: rotate(-1.5deg); }
+.gadget-notes textarea { width: 100%; height: 100%; resize: none; border: 0; background: transparent; padding: 8px; font: 13px 'Segoe Print', 'Comic Sans MS', cursive; color: #333; outline: none; }
+
+/* ---------- Aero window frame ---------- */
+.vista-frame { height: 100%; display: flex; flex-direction: column; padding: 0 7px 7px; border-radius: 7px 7px 4px 4px; border: 1px solid #000000b0;
+  background: linear-gradient(118deg, transparent 18%, #ffffff28 20% 23%, transparent 25% 50%, #ffffff1c 52% 54%, transparent 56%), linear-gradient(#ffffff70, #ffffff30 26px, #ffffff18), var(--glass);
+  -webkit-backdrop-filter: blur(9px) saturate(1.3); backdrop-filter: blur(9px) saturate(1.3);
+  box-shadow: inset 0 0 0 1px #ffffff70, 0 4px 18px #000a; }
+.vista-frame:not(.active) { --glass: rgba(150, 170, 190, .3); box-shadow: inset 0 0 0 1px #ffffff50, 0 2px 8px #0006; }
+.vista-frame.max { border-radius: 0; padding: 0 0 0; border-width: 0 0 1px; }
+.vista-titlebar { height: 29px; flex: none; display: flex; align-items: flex-start; gap: 6px; padding: 7px 0 0 1px; cursor: default; }
+.vista-title-icon { width: 16px; height: 16px; margin-top: 1px; }
+.vista-title-text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #000; font-size: 13px;
+  text-shadow: 0 0 8px #fff, 0 0 8px #fff, 0 0 12px #fff; padding: 0 4px; }
+.vista-frame:not(.active) .vista-title-text { color: #333; }
+.vista-caption-buttons { display: flex; align-self: flex-start; margin-top: -8px; margin-right: -2px; border: 1px solid #00000080; border-top: 0; border-radius: 0 0 5px 5px; overflow: hidden; box-shadow: 0 1px 0 #ffffff70; }
+.vista-frame.max .vista-caption-buttons { margin-top: -7px; margin-right: 0; }
+.vista-cb { width: 26px; height: 19px; padding: 0; border: 0; border-left: 1px solid #00000050; display: grid; place-items: center; cursor: default;
+  background: linear-gradient(#ffffff80, #ffffff38 45%, #00000020 50%, #ffffff40); box-shadow: inset 0 0 0 1px #ffffff50; }
+.vista-cb:first-child { border-left: 0; }
+.vista-cb svg { width: 10px; height: 10px; fill: #fff; stroke: #fff; filter: drop-shadow(0 0 1px #000) drop-shadow(0 0 1px #000); }
+.vista-cb:hover { background: linear-gradient(#bfe6ff, #6fc3f4 45%, #2b8fd8 50%, #7fd8ff); box-shadow: inset 0 0 0 1px #ffffff90, 0 0 8px #6fd0ff; }
+.vista-cb:active { filter: brightness(.85); }
+.vista-cb:disabled { opacity: .5; background: linear-gradient(#ffffff60, #ffffff20 45%, #00000010 50%, #ffffff30); box-shadow: none; }
+.vista-cb-close { width: 44px; background: linear-gradient(#ebb1a4, #d77b66 45%, #c4472b 50%, #d8806a); }
+.vista-frame:not(.active) .vista-cb-close { background: linear-gradient(#ffffff80, #ffffff38 45%, #00000020 50%, #ffffff40); }
+.vista-cb-close:hover, .vista-frame:not(.active) .vista-cb-close:hover { background: linear-gradient(#ffc8b8, #f28b6f 45%, #e8401a 50%, #ff9a5e); box-shadow: inset 0 0 0 1px #ffffffa0, 0 0 12px 2px #ff6a3a; }
+.vista-window-body { flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--ui-bg); border: 1px solid #00000080; box-shadow: 0 0 0 1px #ffffff60; overflow: hidden; }
+.vista-frame.max .vista-window-body { border-width: 1px 0 0; }
+.vista-window-body > .app { flex: 1; min-height: 0; }
+
+/* ---------- taskbar ---------- */
+.vista-taskbar { position: absolute; left: 0; right: 0; bottom: 0; height: 30px; z-index: 50000; display: flex; align-items: stretch; padding-left: 52px;
+  background: linear-gradient(#ffffff38, #ffffff10 48%, #00000000 50%, #ffffff12), rgba(10, 12, 16, .78); border-top: 1px solid #ffffff50; box-shadow: 0 -1px 0 #000; color: #fff; }
+.vista-taskbar::before { content: ''; position: absolute; inset: 0; z-index: -1; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.vista-start-wrap { position: absolute; left: 3px; bottom: 0; }
+.vista-orb { width: 42px; height: 42px; margin-bottom: -2px; padding: 0; border: 1px solid #000; border-radius: 50%; display: grid; place-items: center; cursor: default; position: relative;
+  background: radial-gradient(ellipse 70% 45% at 50% 18%, #ffffffa0, #ffffff10 70%, transparent 72%), radial-gradient(circle at 50% 85%, #4fd3ff 0%, #1c6fa3 30%, #0b2a44 60%, #050b14);
+  box-shadow: inset 0 0 0 1px #ffffff60, 0 0 4px #000; transition: box-shadow .2s; }
+.vista-orb img { width: 24px; height: 24px; filter: drop-shadow(0 0 2px #000); }
+.vista-orb:hover, .vista-orb.pressed { box-shadow: inset 0 0 0 1px #ffffffa0, 0 0 14px 3px #58c8ffcc; }
+.vista-orb.pressed { filter: brightness(.9); }
+.vista-quicklaunch { display: flex; align-items: center; gap: 2px; padding: 0 6px; border-right: 1px solid #ffffff20; }
+.vista-quicklaunch button { width: 24px; height: 24px; padding: 0; border: 1px solid transparent; border-radius: 3px; background: none; display: grid; place-items: center; }
+.vista-quicklaunch button:hover { border-color: #ffffff50; background: #ffffff20; }
+.vista-tasks { flex: 1; min-width: 0; display: flex; gap: 3px; padding: 3px 4px; }
+.vista-task { flex: 0 1 160px; min-width: 0; display: flex; align-items: center; gap: 6px; padding: 0 8px; border: 1px solid #000000c0; border-radius: 3px; cursor: default; color: #fff !important; text-align: left;
+  background: linear-gradient(#ffffff30, #ffffff10 48%, #00000020 50%, #ffffff18); box-shadow: inset 0 0 0 1px #ffffff30; }
+.vista-task span { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 3px #000; }
+.vista-task:hover { background: linear-gradient(#ffffff50, #ffffff20 48%, #ffffff10 50%, #ffffff30); }
+.vista-task.active { background: linear-gradient(#9fd6ff70, #4aa0e040 48%, #1f6fb040 50%, #6fc3ff60); box-shadow: inset 0 0 0 1px #bfe6ff80, 0 0 6px #4ab0ff80; }
+.vista-tray { display: flex; align-items: center; gap: 6px; padding: 0 10px; border-left: 1px solid #000; box-shadow: inset 1px 0 #ffffff25; }
+.vista-tray-btn { padding: 1px; border: 1px solid transparent; border-radius: 2px; background: none; display: grid; place-items: center; opacity: .6; }
+.vista-tray-btn.on { opacity: 1; }
+.vista-tray-btn:hover { border-color: #ffffff50; }
+.vista-clock { margin-left: 4px; }
+
+/* ---------- start menu ---------- */
+.vista-startmenu { position: absolute; left: -3px; bottom: 32px; width: 410px; height: 520px; max-height: calc(100vh - 40px); z-index: 60000; display: flex; padding: 8px 0 8px 8px;
+  border: 1px solid #000; border-radius: 7px; background: linear-gradient(#ffffff40, #ffffff10 30%, transparent), rgba(24, 36, 48, .86);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: inset 0 0 0 1px #ffffff50, 0 4px 20px #000a; animation: vista-sm-in .18s ease-out; }
+@keyframes vista-sm-in { from { opacity: 0; transform: translateY(8px); } }
+.vista-sm-pic { position: absolute; right: 40px; top: -30px; padding: 4px; border-radius: 7px; background: linear-gradient(#ffffffd0, #ffffff60); box-shadow: 0 2px 8px #0009; }
+.vista-sm-pic .icon { border-radius: 4px; }
+.vista-sm-left { width: 250px; display: flex; flex-direction: column; background: #fff; border: 1px solid #00000090; border-radius: 4px; box-shadow: 0 0 0 1px #ffffff40; overflow: hidden; }
+.vista-sm-list { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 4px; overflow-y: auto; }
+.vista-sm-item { display: flex; align-items: center; gap: 8px; padding: 3px 6px; border: 1px solid transparent; border-radius: 3px; background: none; text-align: left; cursor: default; color: #000 !important; flex: none; }
+.vista-sm-item span { display: flex; flex-direction: column; min-width: 0; }
+.vista-sm-item small { color: #666; font-size: 11px; }
+.vista-sm-item:hover, .vista-sm-item.hot { background: linear-gradient(#f2f9fe, #d6eefb); border-color: #8ec7ee; }
+.vista-sm-sep { height: 1px; margin: 4px 6px; background: #e4e4e4; flex: none; }
+.vista-sm-grow { flex: 1; }
+.vista-sm-group { padding: 6px 6px 2px; font-weight: 600; color: #1e3287; border-bottom: 1px solid #e4e4e4; margin-bottom: 2px; }
+.vista-sm-empty { padding: 20px 10px; color: #555; text-align: center; }
+.vista-sm-searchall { color: #1e3287 !important; }
+.vista-sm-all { display: flex; align-items: center; gap: 8px; margin: 0 4px; padding: 5px 6px; border: 1px solid transparent; border-top-color: #e4e4e4; border-radius: 0; background: none; text-align: left; font-weight: 600; cursor: default; color: #000 !important; }
+.vista-sm-all:hover { background: linear-gradient(#f2f9fe, #d6eefb); border-color: #8ec7ee; border-radius: 3px; }
+.vista-sm-arrow { color: #1d6fd0; font-size: 9px; }
+.vista-sm-search { position: relative; margin: 0; padding: 7px 8px; background: linear-gradient(#e3edf6, #c9dceb); border-top: 1px solid #a7bdd1; }
+.vista-sm-search input { width: 100%; height: 24px; padding: 2px 26px 2px 6px; border: 1px solid #8ba3bb; border-radius: 2px; font: italic 12px 'Segoe UI', sans-serif; outline: none; background: #fff; }
+.vista-sm-search input:focus { font-style: normal; border-color: #3d7bad; }
+.vista-sm-search .icon { position: absolute; right: 14px; top: 11px; opacity: .7; }
+.vista-sm-right { flex: 1; display: flex; flex-direction: column; padding: 46px 8px 0; color: #fff; }
+.vista-sm-user { padding: 4px 8px 10px; font-weight: 600; }
+.vista-sm-place { padding: 5px 8px; border: 1px solid transparent; border-radius: 3px; background: none; text-align: left; color: #fff !important; text-shadow: 0 0 4px #000; cursor: default; }
+.vista-sm-place.gap { margin-top: 8px; }
+.vista-sm-place:hover { background: linear-gradient(#ffffff40, #ffffff15 50%, #ffffff05 51%, #ffffff25); border-color: #ffffff60; }
+.vista-sm-power { display: flex; align-items: center; gap: 4px; padding: 8px 0 2px 4px; }
+.vista-power-btn, .vista-lock-btn, .vista-arrow-btn { height: 26px; border: 1px solid #000; border-radius: 3px; display: grid; place-items: center; cursor: default; box-shadow: inset 0 0 0 1px #ffffff60; }
+.vista-power-btn { width: 42px; background: linear-gradient(#f5a98c, #dd5a2e 48%, #c0360c 52%, #e57d4f); }
+.vista-power-btn svg { width: 16px; height: 16px; }
+.vista-power-btn:hover { box-shadow: inset 0 0 0 1px #fff9, 0 0 8px #ff7a3a; }
+.vista-lock-btn { width: 42px; background: linear-gradient(#ffffff70, #ffffff30 48%, #00000030 52%, #ffffff40); }
+.vista-lock-btn:hover, .vista-arrow-btn:hover { box-shadow: inset 0 0 0 1px #fff9, 0 0 8px #8fd8ff; }
+.vista-power-more { position: relative; }
+.vista-arrow-btn { width: 22px; color: #fff !important; font-size: 9px !important; background: linear-gradient(#ffffff70, #ffffff30 48%, #00000030 52%, #ffffff40); }
+.vista-power-menu { position: absolute; left: 0; top: auto; bottom: 0; transform: translateX(26px); min-width: 140px; }
+
+/* ---------- shared app contract ---------- */
+.os-vista .app { font: var(--ui-font); color: var(--ui-fg); background: var(--ui-bg); }
+.os-vista .btn { min-width: 73px; min-height: 23px; padding: 2px 10px; border: 1px solid #707070; border-radius: 3px; color: #000; cursor: default;
+  background: linear-gradient(#f2f2f2, #ebebeb 49%, #dddddd 50%, #cfcfcf); box-shadow: inset 0 0 0 1px #fcfcfc; transition: background .15s, border-color .15s; }
+.os-vista .btn:hover:not(:disabled) { border-color: #3c7fb1; background: linear-gradient(#eaf6fd, #d9f0fc 49%, #bee6fd 50%, #a7d9f5); }
+.os-vista .btn:active:not(:disabled) { border-color: #2c628b; background: linear-gradient(#e5f4fc, #c4e5f6 49%, #98d1ef 50%, #68b3db); box-shadow: inset 1px 1px 2px #0003; }
+.os-vista .btn:focus-visible { border-color: #3399ff; box-shadow: inset 0 0 0 1px #9fd5ff; outline: none; }
+.os-vista .btn:disabled { color: #838383; border-color: #adb2b5; background: #f4f4f4; box-shadow: none; }
+.os-vista .field { border: 1px solid #abadb3; border-top-color: #8e8f8f; border-radius: 2px; background: var(--field-bg); color: var(--field-fg); font: var(--ui-font); padding: 2px 4px; outline: none; box-shadow: none; }
+.os-vista .field:focus { border-color: #3d7bad; }
+.os-vista .sunken { border: 1px solid #828790; box-shadow: none; border-radius: 0; }
+.os-vista .toolbar { background: linear-gradient(#fdfdfd, #f0f3f8 50%, #e1e8f0 51%, #dbe4ee); border-bottom: 1px solid #a0afc3; padding: 3px 4px; gap: 3px; }
+.os-vista .toolbar .btn { min-width: 0; border-color: transparent; background: none; box-shadow: none; }
+.os-vista .toolbar .btn:hover:not(:disabled) { border-color: #7da2ce; background: linear-gradient(#f9fcfe, #e6f2fb 49%, #d4e9f8 50%, #c9e3f6); }
+.os-vista .statusbar { background: linear-gradient(#f1f5fb, #dfe7f2); border-top: 1px solid #a0afc3; padding: 3px 6px; }
+.os-vista .menubar { background: linear-gradient(#fcfcfd, #eef2f7); border-bottom: 1px solid #cdd5df; padding: 1px 2px; }
+.os-vista .menubar-item { padding: 2px 8px; border: 1px solid transparent; border-radius: 3px; }
+.os-vista .menubar-item:hover, .os-vista .menubar-item.open { border-color: #a8d8eb; background: linear-gradient(#f2f9fd, #dbeef9); }
+.os-vista .menu-dropdown { background: linear-gradient(90deg, #f1f1f1 26px, #e2e3e3 26px 27px, #fff 27px 28px, #f5f5f5 28px); color: #000; border: 1px solid #979797; box-shadow: 2px 2px 3px #0004; padding: 2px; }
+.os-vista .menu-item { padding: 3px 22px 3px 2px; border: 1px solid transparent; border-radius: 3px; }
+.os-vista .menu-item:hover:not(.disabled) { border-color: #a8d8eb; background: linear-gradient(#f2f9fd, #dbeef9); }
+.os-vista .menu-item.disabled { color: #8d8d8d; opacity: 1; }
+.os-vista .menu-check { width: 26px; }
+.os-vista .menu-separator { background: #e0e0e0; margin: 3px 2px 3px 30px; box-shadow: 0 1px #fff; }
+.os-vista .listview-item.selected, .os-vista .explorer-item.selected, .os-vista .explorer-list.icons .explorer-item.selected .explorer-name { background: linear-gradient(#e8f4fd, #c8e4f8); color: #000; border-radius: 3px; outline: 1px solid #84acdd; outline-offset: -1px; }
+.os-vista .explorer-list.icons .explorer-item.selected { background: linear-gradient(#e8f4fd, #c8e4f8); }
+.os-vista .explorer-list.icons .explorer-item.selected .explorer-name { outline: 0; background: none; }
+.os-vista .app-notepad textarea { font: 13px Consolas, 'Lucida Console', monospace; border: 0; }
+
+/* explorer: glassy breadcrumb-ish toolbar, navigation pane */
+.os-vista .explorer-toolbar { background: linear-gradient(#e3eef9, #c4d8ee 50%, #b5cde9 51%, #c9dcf0); border-bottom: 1px solid #8ea8c8; }
+.os-vista .explorer-tree { background: #f1f5fb; border-right: 1px solid #d5dfea; }
+.os-vista .explorer-tree .tree-row.selected .tree-label { background: linear-gradient(#e8f4fd, #c8e4f8); color: #000; outline: 1px solid #84acdd; border-radius: 2px; }
+.os-vista .explorer-list { background: #fff; }
+
+/* calculator */
+.os-vista .calc-display { background: linear-gradient(#fff, #eef4fa); border: 1px solid #8e9cad; border-radius: 2px; text-align: right; font: 16px 'Segoe UI', sans-serif; }
+.os-vista .calc-key { border: 1px solid #707070; border-radius: 3px; background: linear-gradient(#f2f2f2, #ebebeb 49%, #dddddd 50%, #cfcfcf); color: #1a3e72; cursor: default; }
+.os-vista .calc-key:hover { border-color: #3c7fb1; background: linear-gradient(#eaf6fd, #d9f0fc 49%, #bee6fd 50%, #a7d9f5); }
+.os-vista .calc-key.op, .os-vista .calc-key.fn, .os-vista .calc-key.eq { color: #b31b1b; }
+
+/* minesweeper: glassy blue tiles */
+.os-vista .app-minesweeper { background: linear-gradient(#dfe9f5, #b9cde4); }
+.os-vista .mine-counter { background: #10233d; color: #6fe0ff; border-radius: 3px; font: bold 18px Consolas, monospace; }
+.os-vista .mine-cell { background: linear-gradient(#7fb2ee, #3a74c8); border: 1px solid #2a4f86; border-radius: 2px; box-shadow: inset 0 1px #ffffff80; }
+.os-vista .mine-cell:hover:not(.open) { background: linear-gradient(#a7d0ff, #5b94e0); }
+.os-vista .mine-cell.open { background: #e9eff7; border-color: #b9c6d6; box-shadow: none; }
+.os-vista .mine-cell.boom { background: #e04a2b; }
+.os-vista .mine-cell.n1 { color: #2140b3; } .os-vista .mine-cell.n2 { color: #1f7a1f; } .os-vista .mine-cell.n3 { color: #c21b1b; } .os-vista .mine-cell.n4 { color: #1a1a7a; }
+.os-vista .mine-cell.n5 { color: #7a1a1a; } .os-vista .mine-cell.n6 { color: #157a7a; } .os-vista .mine-cell.n7 { color: #000; } .os-vista .mine-cell.n8 { color: #666; }
+
+/* paint */
+.os-vista .paint-tool.active { background: linear-gradient(#e5f4fc, #98d1ef); border: 1px solid #3c7fb1; border-radius: 3px; }
+.os-vista .paint-canvas { background: #abb7c8; }
+
+/* Internet Explorer 7 */
+.os-vista .browser-toolbar { background: linear-gradient(#e3eef9, #c4d8ee 50%, #b5cde9 51%, #c9dcf0); border-bottom: 1px solid #8ea8c8; }
+.os-vista .browser-address .field, .os-vista .browser-address input { border-radius: 3px; }
+.os-vista .browser-page { background: #fff; }
+
+/* ---------- Vista-only apps ---------- */
+.os-vista .app-welcome { background: linear-gradient(#fff, #f2f6fb); padding: 0; }
+.welcome-head { display: flex; gap: 14px; align-items: center; padding: 14px 18px; background: linear-gradient(#ffffff, #e6eef7); border-bottom: 1px solid #c6d4e4; }
+.welcome-head h1 { margin: 0; font: 300 20px 'Segoe UI', sans-serif; color: #1e3287; }
+.welcome-head p { margin: 2px 0; color: #444; }
+.link { border: 0; background: none; padding: 0; color: #0066cc !important; cursor: pointer; }
+.link:hover { text-decoration: underline; }
+.welcome-section { padding: 10px 18px 4px; font-size: 13px; color: #1e3287; border-bottom: 1px solid #e4e9f0; margin: 0 18px 0 0; }
+.welcome-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 10px 14px; }
+.welcome-task { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border: 1px solid transparent; border-radius: 3px; background: none; text-align: center; cursor: default; }
+.welcome-task:hover { border-color: #b8d6fb; background: linear-gradient(#fafbfd, #ebf3fd); }
+.welcome-task.selected { border-color: #84acdd; background: linear-gradient(#e8f4fd, #c8e4f8); }
+.welcome-detail { margin: 4px 18px; padding: 12px; display: flex; gap: 12px; border: 1px solid #d5dfea; border-radius: 4px; background: #fff; }
+.welcome-detail b { font-size: 13px; color: #1e3287; font-weight: 600; }
+.welcome-detail p { margin: 4px 0 8px; color: #444; }
+.welcome-foot { margin-top: auto; padding: 8px 18px; display: flex; align-items: center; gap: 6px; border-top: 1px solid #d5dfea; background: #f0f0f0; }
+
+.os-vista .app-personalize { padding: 14px 18px; background: #fff; }
+.app-personalize h2 { margin: 0 0 4px; font: 300 18px 'Segoe UI', sans-serif; color: #1e3287; }
+.app-personalize p { margin: 0 0 12px; color: #444; }
+.personalize-grid { flex: 1; min-height: 0; overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; align-content: start; padding: 4px; border: 1px solid #d5dfea; }
+.personalize-thumb { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px; border: 1px solid transparent; border-radius: 3px; background: none; cursor: default; }
+.personalize-thumb span { width: 100%; aspect-ratio: 4 / 3; border: 1px solid #888; background-size: cover !important; }
+.personalize-thumb:hover { border-color: #b8d6fb; background: #f2f8fe; }
+.personalize-thumb.selected { border-color: #84acdd; background: linear-gradient(#e8f4fd, #c8e4f8); }
+.personalize-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+
+/* control panel (category view) */
+.os-vista .app-cpanel { display: flex; flex-direction: row; background: #fff; }
+.os-vista .cpanel-side { width: 190px; flex: none; padding: 14px; background: linear-gradient(90deg, #e3eefa, #f2f7fd); border-right: 1px solid #d5dfea; display: flex; flex-direction: column; gap: 6px; }
+.os-vista .cpanel-side-title { font-weight: 600; color: #1e3287; margin-top: 8px; }
+.os-vista .cpanel-side-link { color: #0066cc; cursor: pointer; padding-left: 6px; }
+.os-vista .cpanel-side-link:hover { text-decoration: underline; }
+.os-vista .cpanel-main { flex: 1; overflow: auto; padding: 16px 22px; }
+.os-vista .cpanel-heading { font: 300 18px 'Segoe UI', sans-serif; color: #1e3287; margin: 0 0 14px; }
+.os-vista .cpanel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px 18px; }
+.os-vista .cpanel-applet { display: flex; align-items: flex-start; gap: 10px; text-align: left; border: 1px solid transparent; border-radius: 3px; background: none; padding: 6px; cursor: pointer; }
+.os-vista .cpanel-applet span { display: flex; flex-direction: column; gap: 2px; }
+.os-vista .cpanel-applet b { color: #1e7a1e; font-weight: 600; font-size: 13px; }
+.os-vista .cpanel-applet small { color: #0066cc; }
+.os-vista .cpanel-applet:hover { border-color: #b8d6fb; background: #f2f8fe; }
+.os-vista .desktop-icons.with-sidebar { right: 162px; }
