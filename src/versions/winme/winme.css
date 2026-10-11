@@ -1,0 +1,11 @@
+/* Windows Me-only extras. */
+.os-winme .winme-restore { padding-bottom: 10px; }
+.os-winme .winme-restore-main { flex: 1; display: flex; min-height: 0; background: #fff; box-shadow: 0 1px var(--shadow), 0 2px var(--hilight); }
+.os-winme .winme-restore-main aside { width: 120px; padding: 16px; background: linear-gradient(#0a246a, #3a6ea5 70%, #a6caf0); display: flex; justify-content: center; align-items: flex-start; }
+.os-winme .winme-restore-main section { flex: 1; padding: 16px 20px; display: flex; flex-direction: column; gap: 8px; overflow: auto; }
+.os-winme .winme-restore-main h1 { margin: 0 0 6px; font: bold 18px Tahoma, Verdana, sans-serif; color: #0a246a; }
+.os-winme .winme-restore-main p { margin: 0; line-height: 1.5; }
+.os-winme .winme-restore-field { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+.os-winme .winme-restore-list { height: 140px; }
+.os-winme .winme-restore-result { white-space: pre-wrap; }
+.os-winme .winme-restore-buttons { padding: 10px 10px 0; }

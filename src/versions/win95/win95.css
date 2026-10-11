@@ -1,0 +1,10 @@
+/* Windows 95-only extras (theme variables live in classic.css defaults). */
+.os-win95 .win95-welcome { gap: 8px; padding: 12px 12px 8px; }
+.os-win95 .win95-welcome h1 { margin: 0; font: 24px "Times New Roman", serif; }
+.os-win95 .win95-welcome h1 b { font: bold 26px Arial, sans-serif; margin-left: 6px; }
+.os-win95 .win95-welcome h1 span { font: 26px Arial, sans-serif; color: #fff; text-shadow: 1px 1px 0 #000, -1px -1px 0 #808080; margin-left: 2px; }
+.os-win95 .win95-welcome-main { display: flex; gap: 10px; flex: 1; min-height: 0; }
+.os-win95 .win95-welcome-tip { flex: 1; display: flex; gap: 10px; padding: 14px; align-items: flex-start; background: #fff; }
+.os-win95 .win95-welcome-tip p { margin: 8px 0 0; font-size: 13px; line-height: 1.5; }
+.os-win95 .win95-welcome-buttons { display: flex; flex-direction: column; gap: 6px; width: 120px; }
+.os-win95 .win95-welcome-buttons .btn { width: 100%; }

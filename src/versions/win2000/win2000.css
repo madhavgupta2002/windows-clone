@@ -1,0 +1,17 @@
+/* Windows 2000-only extras. */
+.os-win2000 .w2k-logon { background: #3a6ea5; display: grid; place-items: center; }
+.os-win2000 .w2k-logon-dialog { width: 420px; }
+.os-win2000 .w2k-logon-banner { position: relative; display: flex; justify-content: center; padding: 18px 10px 22px; background: linear-gradient(#fff, #e6e6ee); border-bottom: 6px solid; border-image: linear-gradient(90deg, #0a246a, #3a6ea5, #a6caf0, #3a6ea5, #0a246a) 1; }
+.os-win2000 .w2k-logon-banner .classic-logo-flag { width: 54px; height: 54px; }
+.os-win2000 .w2k-logon-banner .classic-logo-win { font-size: 34px; }
+.os-win2000 .w2k-logon-banner .classic-logo-ms { font-size: 12px; }
+.os-win2000 .w2k-logon-banner .classic-logo-small { font-size: 13px; font-style: normal; font-weight: bold; }
+.os-win2000 .w2k-logon-banner .classic-logo-ed { color: #000; text-shadow: none; font-size: 1em; vertical-align: baseline; font-weight: bold; }
+.os-win2000 .w2k-logon-built { position: absolute; right: 10px; bottom: 4px; font-size: 10px; color: #444; }
+.os-win2000 .w2k-logon-body { padding: 14px; }
+.os-win2000 .w2k-sas { display: flex; align-items: center; gap: 14px; font-size: 13px; }
+.os-win2000 .w2k-sas-note { color: #333; }
+.os-win2000 .w2k-logon-fields { display: flex; flex-direction: column; gap: 8px; padding: 0 20px; }
+.os-win2000 .w2k-logon-fields label { display: flex; align-items: center; gap: 8px; }
+.os-win2000 .w2k-logon-fields span { width: 70px; }
+.os-win2000 .w2k-logon-fields input { flex: 1; }
